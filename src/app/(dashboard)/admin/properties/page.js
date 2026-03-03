@@ -81,79 +81,81 @@ export default function AdminPropertiesPage() {
                     <p>All caught up! No properties to review.</p>
                 </div>
             ) : (
-                <table className={styles.dataTable}>
-                    <thead>
-                        <tr>
-                            <th>Property</th>
-                            <th>Landlord</th>
-                            <th>Area</th>
-                            <th>Type</th>
-                            <th>Price</th>
-                            <th>Status</th>
-                            <th>Verification</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {properties.map(property => (
-                            <tr key={property.id}>
-                                <td>
-                                    <strong>{property.title}</strong>
-                                    <div className="text-xs text-muted">{property.address}</div>
-                                </td>
-                                <td>
-                                    {property.landlord.firstName} {property.landlord.lastName}
-                                    {property.landlord.ninStatus === 'VERIFIED' && (
-                                        <span className="badge badge-verified" style={{ marginLeft: 4 }}>NIN ✓</span>
-                                    )}
-                                </td>
-                                <td>{property.area}</td>
-                                <td>{formatType(property.type)}</td>
-                                <td>₦{Number(property.rentPrice).toLocaleString()}</td>
-                                <td>
-                                    <span className={`badge badge-${property.status === 'VERIFIED' ? 'verified' : property.status === 'PENDING' ? 'pending' : 'error'}`}>
-                                        {property.status}
-                                    </span>
-                                </td>
-                                <td>
-                                    <span className={`badge badge-${property.verificationStatus === 'VERIFIED' ? 'verified' : property.verificationStatus === 'SUSPICIOUS' ? 'error' : 'pending'}`}>
-                                        {property.verificationStatus}
-                                    </span>
-                                </td>
-                                <td>
-                                    {property.status === 'PENDING' && (
-                                        <div className="flex gap-2">
-                                            <button className="btn btn-sm"
-                                                style={{ background: 'var(--color-success)', color: 'white' }}
-                                                onClick={() => handleAction(property.id, 'verify')}
-                                                disabled={actionLoading === property.id}>
-                                                ✓ Verify
-                                            </button>
-                                            <button className="btn btn-sm btn-outline"
-                                                style={{ borderColor: 'var(--color-error)', color: 'var(--color-error)' }}
-                                                onClick={() => handleAction(property.id, 'reject')}
-                                                disabled={actionLoading === property.id}>
-                                                ✕ Reject
-                                            </button>
-                                        </div>
-                                    )}
-                                    {property.status === 'VERIFIED' && (
-                                        <button className="btn btn-sm btn-outline" onClick={() => handleAction(property.id, 'freeze')}
-                                            disabled={actionLoading === property.id}>
-                                            Freeze
-                                        </button>
-                                    )}
-                                    {property.status === 'INACTIVE' && (
-                                        <button className="btn btn-sm btn-outline" onClick={() => handleAction(property.id, 'activate')}
-                                            disabled={actionLoading === property.id}>
-                                            Activate
-                                        </button>
-                                    )}
-                                </td>
+                <div className={styles.tableContainer}>
+                    <table className={styles.dataTable}>
+                        <thead>
+                            <tr>
+                                <th>Property</th>
+                                <th>Landlord</th>
+                                <th>Area</th>
+                                <th>Type</th>
+                                <th>Price</th>
+                                <th>Status</th>
+                                <th>Verification</th>
+                                <th>Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {properties.map(property => (
+                                <tr key={property.id}>
+                                    <td>
+                                        <strong>{property.title}</strong>
+                                        <div className="text-xs text-muted">{property.address}</div>
+                                    </td>
+                                    <td>
+                                        {property.landlord.firstName} {property.landlord.lastName}
+                                        {property.landlord.ninStatus === 'VERIFIED' && (
+                                            <span className="badge badge-verified" style={{ marginLeft: 4 }}>NIN ✓</span>
+                                        )}
+                                    </td>
+                                    <td>{property.area}</td>
+                                    <td>{formatType(property.type)}</td>
+                                    <td>₦{Number(property.rentPrice).toLocaleString()}</td>
+                                    <td>
+                                        <span className={`badge badge-${property.status === 'VERIFIED' ? 'verified' : property.status === 'PENDING' ? 'pending' : 'error'}`}>
+                                            {property.status}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span className={`badge badge-${property.verificationStatus === 'VERIFIED' ? 'verified' : property.verificationStatus === 'SUSPICIOUS' ? 'error' : 'pending'}`}>
+                                            {property.verificationStatus}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {property.status === 'PENDING' && (
+                                            <div className="flex gap-2">
+                                                <button className="btn btn-sm"
+                                                    style={{ background: 'var(--color-success)', color: 'white' }}
+                                                    onClick={() => handleAction(property.id, 'verify')}
+                                                    disabled={actionLoading === property.id}>
+                                                    ✓ Verify
+                                                </button>
+                                                <button className="btn btn-sm btn-outline"
+                                                    style={{ borderColor: 'var(--color-error)', color: 'var(--color-error)' }}
+                                                    onClick={() => handleAction(property.id, 'reject')}
+                                                    disabled={actionLoading === property.id}>
+                                                    ✕ Reject
+                                                </button>
+                                            </div>
+                                        )}
+                                        {property.status === 'VERIFIED' && (
+                                            <button className="btn btn-sm btn-outline" onClick={() => handleAction(property.id, 'freeze')}
+                                                disabled={actionLoading === property.id}>
+                                                Freeze
+                                            </button>
+                                        )}
+                                        {property.status === 'INACTIVE' && (
+                                            <button className="btn btn-sm btn-outline" onClick={() => handleAction(property.id, 'activate')}
+                                                disabled={actionLoading === property.id}>
+                                                Activate
+                                            </button>
+                                        )}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             )}
         </div>
     );

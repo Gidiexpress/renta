@@ -15,7 +15,15 @@ export async function GET() {
                 property: { landlordId: parseInt(session.user.id) }
             },
             include: {
-                tenant: { select: { firstName: true, lastName: true, phone: true, email: true } },
+                tenant: {
+                    select: {
+                        firstName: true,
+                        lastName: true,
+                        phone: true,
+                        email: true,
+                        tenantProfile: true
+                    }
+                },
                 property: { select: { title: true, address: true } }
             },
             orderBy: { createdAt: 'desc' }

@@ -2,6 +2,19 @@ import styles from './page.module.css';
 import Link from 'next/link';
 import { CheckCircle, DollarSign, Ghost, Search, Ban, MapPin, Check } from 'lucide-react';
 
+export const metadata = {
+  title: 'Renta — Verified Apartments for Rent in Ilorin',
+  description: 'Find verified apartments for rent in Ilorin, Kwara State. Zero agent inflation, 100% escrow protection, and verified property listings.',
+  openGraph: {
+    title: 'Renta — Rent Verified Apartments at Real Prices',
+    description: 'No agent inflation. No fake listings. Rent securely with escrow protection.',
+    url: 'https://renta-app.com',
+    siteName: 'Renta',
+    locale: 'en_NG',
+    type: 'website',
+  },
+};
+
 export default function Home() {
   return (
     <div className={styles.page}>
@@ -12,7 +25,7 @@ export default function Home() {
             Renta
           </Link>
           <div className={styles.navLinks}>
-            <Link href="/listings" className={styles.navLink}>Browse Listings</Link>
+            <Link href="/register" className={styles.navLink}>Browse Listings</Link>
             <Link href="/login" className={`btn btn-outline ${styles.navBtn}`}>Log In</Link>
             <Link href="/register" className={`btn btn-primary ${styles.navBtn}`}>Get Started</Link>
           </div>
@@ -274,7 +287,7 @@ export default function Home() {
           <div className={styles.footerLinks}>
             <div>
               <h6>Platform</h6>
-              <Link href="/listings">Browse Listings</Link>
+              <Link href="/register">Browse Listings</Link>
               <Link href="/register?role=landlord">List Property</Link>
               <Link href="/register?role=scout">Become a Scout</Link>
             </div>

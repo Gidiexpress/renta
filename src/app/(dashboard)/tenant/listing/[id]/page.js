@@ -27,6 +27,7 @@ export default function TenantPropertyDetails() {
     const { data: session } = useSession();
 
     const [property, setProperty] = useState(null);
+    const [tenantProfile, setTenantProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [activeImage, setActiveImage] = useState(0);
@@ -46,10 +47,30 @@ export default function TenantPropertyDetails() {
             }
         };
 
-        if (id) fetchDetails();
+        const fetchProfile = async () => {
+            try {
+                const res = await fetch('/api/tenant/profile');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.id) setTenantProfile(data);
+                }
+            } catch (err) {
+                console.error('Failed to fetch tenant profile', err);
+            }
+        };
+
+        if (id) {
+            fetchDetails();
+            fetchProfile();
+        }
     }, [id]);
 
     const handleInitializePayment = async () => {
+        if (!tenantProfile) {
+            router.push(`/tenant/screening?returnUrl=/tenant/listing/${id}`);
+            return;
+        }
+
         try {
             const res = await fetch('/api/payments/initialize', {
                 method: 'POST',

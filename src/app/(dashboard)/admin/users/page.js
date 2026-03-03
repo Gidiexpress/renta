@@ -66,60 +66,62 @@ export default function AdminUsersPage() {
                     <h3>No users found</h3>
                 </div>
             ) : (
-                <table className={styles.dataTable}>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Role</th>
-                            <th>NIN</th>
-                            <th>Status</th>
-                            <th>Properties</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {users.map(user => (
-                            <tr key={user.id}>
-                                <td><strong>{user.firstName} {user.lastName}</strong></td>
-                                <td className="text-sm">{user.email}</td>
-                                <td className="text-sm">{user.phone || '—'}</td>
-                                <td><span className="badge badge-primary">{user.role}</span></td>
-                                <td>
-                                    <span className={`badge badge-${user.ninStatus === 'VERIFIED' ? 'verified' : 'pending'}`}>
-                                        {user.ninStatus}
-                                    </span>
-                                </td>
-                                <td>
-                                    <span className={`badge badge-${user.status === 'ACTIVE' ? 'verified' : 'error'}`}>
-                                        {user.status}
-                                    </span>
-                                </td>
-                                <td className="text-center">{user._count?.properties || 0}</td>
-                                <td>
-                                    <div className="flex gap-2">
-                                        {user.status === 'ACTIVE' ? (
-                                            <button className="btn btn-sm btn-outline"
-                                                style={{ borderColor: 'var(--color-error)', color: 'var(--color-error)' }}
-                                                onClick={() => handleAction(user.id, 'suspend')}
-                                                disabled={actionLoading === user.id}>
-                                                Suspend
-                                            </button>
-                                        ) : (
-                                            <button className="btn btn-sm"
-                                                style={{ background: 'var(--color-success)', color: 'white' }}
-                                                onClick={() => handleAction(user.id, 'activate')}
-                                                disabled={actionLoading === user.id}>
-                                                Activate
-                                            </button>
-                                        )}
-                                    </div>
-                                </td>
+                <div className={styles.tableContainer}>
+                    <table className={styles.dataTable}>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Role</th>
+                                <th>NIN</th>
+                                <th>Status</th>
+                                <th>Properties</th>
+                                <th>Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {users.map(user => (
+                                <tr key={user.id}>
+                                    <td><strong>{user.firstName} {user.lastName}</strong></td>
+                                    <td className="text-sm">{user.email}</td>
+                                    <td className="text-sm">{user.phone || '—'}</td>
+                                    <td><span className="badge badge-primary">{user.role}</span></td>
+                                    <td>
+                                        <span className={`badge badge-${user.ninStatus === 'VERIFIED' ? 'verified' : 'pending'}`}>
+                                            {user.ninStatus}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span className={`badge badge-${user.status === 'ACTIVE' ? 'verified' : 'error'}`}>
+                                            {user.status}
+                                        </span>
+                                    </td>
+                                    <td className="text-center">{user._count?.properties || 0}</td>
+                                    <td>
+                                        <div className="flex gap-2">
+                                            {user.status === 'ACTIVE' ? (
+                                                <button className="btn btn-sm btn-outline"
+                                                    style={{ borderColor: 'var(--color-error)', color: 'var(--color-error)' }}
+                                                    onClick={() => handleAction(user.id, 'suspend')}
+                                                    disabled={actionLoading === user.id}>
+                                                    Suspend
+                                                </button>
+                                            ) : (
+                                                <button className="btn btn-sm"
+                                                    style={{ background: 'var(--color-success)', color: 'white' }}
+                                                    onClick={() => handleAction(user.id, 'activate')}
+                                                    disabled={actionLoading === user.id}>
+                                                    Activate
+                                                </button>
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             )}
         </div>
     );

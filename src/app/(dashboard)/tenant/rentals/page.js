@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { FileText, Home, MapPin, Calendar, Shield, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 
 const statusConfig = {
@@ -95,10 +96,16 @@ export default function TenantRentalsPage() {
                                     {/* Property Image */}
                                     {image && (
                                         <div style={{
-                                            width: '120px', height: '90px', borderRadius: 'var(--radius-md)',
+                                            position: 'relative', width: '120px', height: '90px', borderRadius: 'var(--radius-md)',
                                             overflow: 'hidden', flexShrink: 0, background: 'var(--bg-secondary)'
                                         }}>
-                                            <img src={image} alt={rental.property?.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            <Image
+                                                src={image}
+                                                alt={rental.property?.title || 'Property Image'}
+                                                fill
+                                                style={{ objectFit: 'cover' }}
+                                                sizes="120px"
+                                            />
                                         </div>
                                     )}
 

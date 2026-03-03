@@ -44,6 +44,7 @@ model User {
   notifications       Notification[]
   releasedEscrows     Escrow[]             @relation("ReleasedByAdmin")
   wallet              Wallet?
+  tenantProfile       TenantProfile?
 
   @@map("users")
 }
@@ -72,6 +73,21 @@ enum UserStatus {
   ACTIVE
   SUSPENDED
   BLACKLISTED
+}
+
+model TenantProfile {
+  id                        Int      @id @default(autoincrement())
+  userId                    Int      @unique @map("user_id")
+  employmentStatus          String   @map("employment_status")
+  monthlyIncome             Decimal  @map("monthly_income") @db.Decimal(12, 2)
+  employerName              String?  @map("employer_name")
+  previousLandlordReference String?  @map("previous_landlord_reference") @db.Text
+  createdAt                 DateTime @default(now()) @map("created_at")
+  updatedAt                 DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("tenant_profiles")
 }
 
 // ==========================================
@@ -162,6 +178,7 @@ enum VerificationStatus {
   IN_PROGRESS
   VERIFIED
   REJECTED
+  SUSPICIOUS
 }
 
 // ==========================================

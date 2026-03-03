@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Search, GraduationCap, MapPin, Home, CheckCircle } from 'lucide-react';
 import styles from './search.module.css';
 import dashStyles from '../dashboard.module.css';
@@ -143,15 +144,28 @@ export default function TenantSearchPage() {
                 <>
                     <div className={dashStyles.propertyGrid}>
                         {properties.map(property => (
-                            <Link key={property.id} href={`/tenant/listing/${property.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                                <div className={`${dashStyles.propertyCard} card-interactive`}>
+                            <Link key={property.id} href={`/listing/${property.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                <div className={`${dashStyles.propertyCard} card-interactive ${property.isFeatured ? 'border-primary' : ''}`} style={property.isFeatured ? { border: '2px solid var(--color-primary)' } : {}}>
                                     <div className={dashStyles.propertyImage}>
                                         {property.images?.[0] ? (
-                                            <img src={property.images[0].url} alt={property.title} />
+                                            <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                                                <Image
+                                                    src={property.images[0].url}
+                                                    alt={property.title}
+                                                    fill
+                                                    style={{ objectFit: 'cover' }}
+                                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                                />
+                                            </div>
                                         ) : (
                                             <span>No Image</span>
                                         )}
                                         <div className={dashStyles.propertyBadge}>
+                                            {property.isFeatured && (
+                                                <span className="badge" style={{ background: 'var(--color-primary)', color: 'white', marginRight: '4px' }}>
+                                                    ★ Featured
+                                                </span>
+                                            )}
                                             {property.verificationStatus === 'VERIFIED' && (
                                                 <span className="badge badge-verified"><CheckCircle size={14} /> Verified</span>
                                             )}

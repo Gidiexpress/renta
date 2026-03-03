@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import {
     User, Mail, Phone, Shield, Building2, Calendar,
-    Save, Lock, Eye, EyeOff, CheckCircle, AlertTriangle, Loader2
+    Save, Lock, Eye, EyeOff, CheckCircle, AlertTriangle, Loader2, Briefcase
 } from 'lucide-react';
+import Link from 'next/link';
 
 export default function ProfilePage() {
     const { data: session } = useSession();
@@ -266,6 +267,25 @@ export default function ProfilePage() {
                             </div>
                             <button type="submit" className="btn btn-primary">Verify NIN</button>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Tenant Screening Widget */}
+            {profile?.role === 'TENANT' && (
+                <div className="card mb-6" style={{ borderLeft: '4px solid var(--color-info)', background: 'var(--bg-secondary)' }}>
+                    <div className="flex flex-col gap-3">
+                        <div className="flex items-center gap-2">
+                            <Briefcase size={20} style={{ color: 'var(--color-info)' }} />
+                            <h3 style={{ fontSize: 'var(--text-lg)', margin: 0 }}>Tenant Screening Profile</h3>
+                        </div>
+                        <p className="text-sm text-muted">A completed screening profile (employment & income details) is required before you can rent any property on Renta. It helps landlords review your applications faster.</p>
+
+                        <div className="mt-2 text-left">
+                            <Link href="/tenant/screening" className="btn btn-outline" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                                <Briefcase size={16} /> Update Screening Profile
+                            </Link>
+                        </div>
                     </div>
                 </div>
             )}

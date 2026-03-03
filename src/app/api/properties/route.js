@@ -89,7 +89,7 @@ export async function GET(request) {
             prisma.property.count({ where }),
         ]);
 
-        return NextResponse.json({
+        const response = NextResponse.json({
             properties,
             pagination: {
                 page,
@@ -98,6 +98,13 @@ export async function GET(request) {
                 totalPages: Math.ceil(total / limit),
             },
         });
+
+        // Add caching for public searches (60 seconds)
+        if (!landlordId) {
+            response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
+        }
+
+        return response;
     } catch (error) {
         console.error('Properties list error:', error);
         return NextResponse.json(

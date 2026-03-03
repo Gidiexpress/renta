@@ -81,12 +81,13 @@ export default function WalletCard({ userRole }) {
                 <Wallet style={{ color: 'var(--color-primary)' }} />
             </div>
 
-            <div className="flex gap-4 mb-6">
+            <div className="flex gap-4 mb-6 flex-wrap">
                 <div className="flex-1 text-center" style={{
                     background: 'var(--bg-secondary)',
                     borderRadius: 'var(--radius-lg)',
                     padding: 'var(--space-6)',
-                    border: '1px solid var(--border-light)'
+                    border: '1px solid var(--border-light)',
+                    minWidth: '200px'
                 }}>
                     <p className="text-muted text-sm" style={{ marginBottom: 'var(--space-1)' }}>Available Balance</p>
                     <h3 style={{ fontSize: 'var(--text-3xl)', fontWeight: 'var(--font-bold)', color: 'var(--color-primary)' }}>
@@ -98,7 +99,8 @@ export default function WalletCard({ userRole }) {
                     background: 'var(--bg-secondary)',
                     borderRadius: 'var(--radius-lg)',
                     padding: 'var(--space-6)',
-                    border: '1px solid var(--border-light)'
+                    border: '1px solid var(--border-light)',
+                    minWidth: '200px'
                 }}>
                     <p className="text-muted text-sm" style={{ marginBottom: 'var(--space-1)' }}>Total Earned</p>
                     <h3 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>

@@ -6,6 +6,7 @@ import { Users, Home, MapPin, Calendar, Phone, CheckCircle, Clock } from 'lucide
 export default function LandlordTenantsPage() {
     const [rentals, setRentals] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [expandedTenant, setExpandedTenant] = useState(null);
 
     useEffect(() => {
         const fetchTenants = async () => {
@@ -76,17 +77,54 @@ export default function LandlordTenantsPage() {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="text-right">
+                                <div className="text-right flex flex-col items-end gap-2">
                                     <span className={`badge ${rental.status === 'ACTIVE' ? 'badge-verified' : 'badge-pending'} flex items-center gap-1`}>
                                         {rental.status === 'ACTIVE' ? <CheckCircle size={12} /> : <Clock size={12} />}
                                         {rental.status}
                                     </span>
-                                    <p className="text-xs text-muted mt-2">
+                                    <p className="text-xs text-muted">
                                         <Calendar size={12} style={{ display: 'inline', marginRight: '4px' }} />
                                         {new Date(rental.startDate).toLocaleDateString('en-GB', { dateStyle: 'medium' })}
                                     </p>
+                                    {rental.tenant?.tenantProfile && (
+                                        <button
+                                            onClick={() => setExpandedTenant(expandedTenant === rental.id ? null : rental.id)}
+                                            className="btn btn-outline btn-sm mt-1"
+                                            style={{ padding: '4px 8px', fontSize: '11px' }}
+                                        >
+                                            {expandedTenant === rental.id ? 'Hide Profile' : 'View Profile'}
+                                        </button>
+                                    )}
                                 </div>
                             </div>
+
+                            {expandedTenant === rental.id && rental.tenant?.tenantProfile && (
+                                <div className="mt-4 p-4 rounded-md" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+                                    <h5 className="font-semibold text-sm mb-3">Screening Profile</h5>
+                                    <div className="grid grid-2 gap-4 text-sm">
+                                        <div>
+                                            <p className="text-muted text-xs uppercase tracking-wider mb-1">Employment Status</p>
+                                            <p className="font-medium">{rental.tenant.tenantProfile.employmentStatus.replace('_', ' ')}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-muted text-xs uppercase tracking-wider mb-1">Monthly Income</p>
+                                            <p className="font-medium">₦{Number(rental.tenant.tenantProfile.monthlyIncome).toLocaleString()}</p>
+                                        </div>
+                                        {rental.tenant.tenantProfile.employerName && (
+                                            <div style={{ gridColumn: '1 / -1' }}>
+                                                <p className="text-muted text-xs uppercase tracking-wider mb-1">Employer / School</p>
+                                                <p className="font-medium">{rental.tenant.tenantProfile.employerName}</p>
+                                            </div>
+                                        )}
+                                        {rental.tenant.tenantProfile.previousLandlordReference && (
+                                            <div style={{ gridColumn: '1 / -1' }}>
+                                                <p className="text-muted text-xs uppercase tracking-wider mb-1">Reference</p>
+                                                <p className="font-medium">{rental.tenant.tenantProfile.previousLandlordReference}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>

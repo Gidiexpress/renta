@@ -76,6 +76,8 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: var(--space-6);
+    flex-wrap: wrap;
+    gap: var(--space-4);
 }
 
 .propertiesHeader h3 {
@@ -183,13 +185,21 @@
 }
 
 /* Data Table */
-.dataTable {
+.tableContainer {
     width: 100%;
-    border-collapse: collapse;
+    max-width: 100%;
+    overflow-x: auto;
     background: var(--bg-card);
     border-radius: var(--radius-lg);
-    overflow: hidden;
     box-shadow: var(--shadow-sm);
+    margin-bottom: var(--space-6);
+    -webkit-overflow-scrolling: touch;
+}
+
+.dataTable {
+    width: 100%;
+    min-width: 800px;
+    border-collapse: collapse;
 }
 
 .dataTable th {

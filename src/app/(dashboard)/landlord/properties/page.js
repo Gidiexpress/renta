@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Home, MapPin } from 'lucide-react';
 import styles from '../../tenant/dashboard.module.css';
 
@@ -112,7 +113,15 @@ export default function LandlordPropertiesPage() {
                             <div className={styles.propertyCard} style={{ cursor: 'pointer' }}>
                                 <div className={styles.propertyImage}>
                                     {property.images?.[0] ? (
-                                        <img src={property.images[0].url} alt={property.title} />
+                                        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                                            <Image
+                                                src={property.images[0].url}
+                                                alt={property.title}
+                                                fill
+                                                style={{ objectFit: 'cover' }}
+                                                sizes="(max-width: 768px) 100vw, 33vw"
+                                            />
+                                        </div>
                                     ) : (
                                         <span>No Image</span>
                                     )}
