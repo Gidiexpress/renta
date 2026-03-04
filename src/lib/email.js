@@ -16,23 +16,18 @@ import nodemailer from 'nodemailer';
  * 📧 Design & Templates
  */
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: parseInt(process.env.SMTP_PORT || '587'),
-  secure: false, // true for 465, false for other ports
+  host: process.env.SMTP_HOST || 'smtp.resend.com',
+  port: parseInt(process.env.SMTP_PORT || '465'),
+  secure: true, // true for 465, false for other ports
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
   debug: true, // show debug output
   logger: true, // log information in console
-  connectionTimeout: 10000, // 10 seconds
-  greetingTimeout: 10000,
-  socketTimeout: 10000,
-  tls: {
-    // Correctly handle STARTTLS
-    ciphers: 'SSLv3',
-    rejectUnauthorized: false
-  }
+  connectionTimeout: 15000, // Increased to 15 seconds
+  greetingTimeout: 15000,
+  socketTimeout: 15000,
 });
 
 // Diagnostic log to verify env vars are loaded (masked)
