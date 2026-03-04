@@ -7,26 +7,36 @@ export async function GET(request) {
         // Simple security check: Only logged in users (or even better, Admins) should trigger this
         const session = await auth();
 
-        // Temporarily allowing if no session for ease of debugging on first deploy, 
-        // but logging the action.
-        console.log('Email test triggered. Session:', session?.user?.email || 'No Session');
+        // Resend Testing Rule: 
+        // 1. If no domain verified, FROM must be 'onboarding@resend.dev'
+        // 2. RECIPIENT must be the email you used to sign up for Resend.
 
-        const testEmail = session?.user?.email || 'onboarding@resend.dev';
+        const url = new URL(request.url);
+        const testEmail = url.searchParams.get('to');
 
-        console.log(`Sending diagnostic email to: ${testEmail}`);
+        if (!testEmail) {
+            return NextResponse.json({
+                error: 'Missing recipient',
+                message: 'Please add ?to=your-email@example.com to the URL. Use the email you used to sign up for Resend.'
+            }, { status: 400 });
+        }
+
+        console.log(`Attempting to send diagnostic email TO: ${testEmail}`);
+
+        // We override the 'from' in the call if the user hasn't set it, 
+        // but currently sendEmail uses the global FROM constant.
+        // Let's just use the current config and show it in the response.
 
         const result = await sendEmail({
             to: testEmail,
-            subject: 'Renta Diagnostic: System Test',
+            subject: 'Renta Diagnostic: System Test 2',
             html: `
-                <h1>Email Diagnostic</h1>
-                <p>This is a test email triggered from the Renta diagnostic route.</p>
+                <h1>Email Diagnostic #2</h1>
+                <p>If you see this, the SMTP connection AND the delivery rules are correct.</p>
                 <ul>
-                    <li><strong>Timestamp:</strong> ${new Date().toISOString()}</li>
                     <li><strong>Recipient:</strong> ${testEmail}</li>
-                    <li><strong>Provider:</strong> Resend (SMTP)</li>
+                    <li><strong>Timestamp:</strong> ${new Date().toLocaleString()}</li>
                 </ul>
-                <p>If you received this, your SMTP configuration is correct!</p>
             `
         });
 
@@ -36,7 +46,7 @@ export async function GET(request) {
             details: {
                 recipient: testEmail,
                 smtp_config_present: !!process.env.SMTP_HOST,
-                env_from: process.env.EMAIL_FROM
+                env_from: process.env.EMAIL_FROM || 'onboarding@resend.dev (Default)'
             }
         });
     } catch (error) {
