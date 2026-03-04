@@ -1,13 +1,28 @@
 import nodemailer from 'nodemailer';
 
+/*
+ * 🛠️ Resend Configuration
+ * To use **Resend**, set the following in your Render environment variables:
+ *
+ * - **`SMTP_HOST`**: `smtp.resend.com`
+ * - **`SMTP_PORT`**: `587`
+ * - **`SMTP_USER`**: `resend` (Always use this exact string)
+ * - **`SMTP_PASS`**: Your API Key (from Resend dashboard, starts with `re_...`)
+ * - **`EMAIL_FROM`**: Your verified domain email (e.g. `hello@renta.ng`)
+ *
+ * > [!IMPORTANT]
+ * > If you haven't verified a domain yet, Resend requires you to use `onboarding@resend.dev` as your `EMAIL_FROM` for testing.
+ *
+ * 📧 Design & Templates
+ */
 const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: false,
-    auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-    },
+  host: process.env.SMTP_HOST,
+  port: parseInt(process.env.SMTP_PORT || '587'),
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
 });
 
 const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || 'Renta';
@@ -17,26 +32,26 @@ const FROM = process.env.EMAIL_FROM || 'noreply@renta.ng';
  * Send an email
  */
 async function sendEmail({ to, subject, html }) {
-    try {
-        const info = await transporter.sendMail({
-            from: `"${APP_NAME}" <${FROM}>`,
-            to,
-            subject,
-            html: wrapInTemplate(subject, html),
-        });
-        console.log('Email sent:', info.messageId);
-        return { success: true, messageId: info.messageId };
-    } catch (error) {
-        console.error('Email send error:', error);
-        return { success: false, error: error.message };
-    }
+  try {
+    const info = await transporter.sendMail({
+      from: `"${APP_NAME}" <${FROM}>`,
+      to,
+      subject,
+      html: wrapInTemplate(subject, html),
+    });
+    console.log('Email sent:', info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('Email send error:', error);
+    return { success: false, error: error.message };
+  }
 }
 
 /**
  * Email template wrapper
  */
 function wrapInTemplate(title, content) {
-    return `
+  return `
     <!DOCTYPE html>
     <html>
     <head>
@@ -83,10 +98,10 @@ function wrapInTemplate(title, content) {
 // ==========================================
 
 export async function sendWelcomeEmail(user) {
-    return sendEmail({
-        to: user.email,
-        subject: `Welcome to ${APP_NAME}!`,
-        html: `
+  return sendEmail({
+    to: user.email,
+    subject: `Welcome to ${APP_NAME}!`,
+    html: `
       <h2 style="color:#000;margin:0 0 16px;">Welcome, ${user.firstName}!</h2>
       <p style="color:#4a4a4a;line-height:1.6;">
         Your ${APP_NAME} account has been created successfully. You're now part of a trusted community for verified apartment rentals in Ilorin.
@@ -101,14 +116,14 @@ export async function sendWelcomeEmail(user) {
         </a>
       </div>
     `,
-    });
+  });
 }
 
 export async function sendPaymentConfirmation({ tenant, property, rental }) {
-    return sendEmail({
-        to: tenant.email,
-        subject: `Payment Confirmed — ${property.title}`,
-        html: `
+  return sendEmail({
+    to: tenant.email,
+    subject: `Payment Confirmed — ${property.title}`,
+    html: `
       <h2 style="color:#000;margin:0 0 16px;">Payment Received!</h2>
       <p style="color:#4a4a4a;line-height:1.6;">
         Your payment for <strong>${property.title}</strong> has been received and is now held in escrow.
@@ -122,28 +137,28 @@ export async function sendPaymentConfirmation({ tenant, property, rental }) {
         Once you move in and confirm access, the funds will be released to the landlord.
       </p>
     `,
-    });
+  });
 }
 
 export async function sendEscrowReleaseEmail({ landlord, property, rental }) {
-    return sendEmail({
-        to: landlord.email,
-        subject: `Funds Released — ${property.title}`,
-        html: `
+  return sendEmail({
+    to: landlord.email,
+    subject: `Funds Released — ${property.title}`,
+    html: `
       <h2 style="color:#000;margin:0 0 16px;">Payment Released!</h2>
       <p style="color:#4a4a4a;line-height:1.6;">
         The tenant has confirmed access to <strong>${property.title}</strong>. 
         ₦${Number(rental.rentAmount).toLocaleString()} will be transferred to your bank account.
       </p>
     `,
-    });
+  });
 }
 
 export async function sendPropertyVerifiedEmail({ landlord, property }) {
-    return sendEmail({
-        to: landlord.email,
-        subject: `Property Verified — ${property.title}`,
-        html: `
+  return sendEmail({
+    to: landlord.email,
+    subject: `Property Verified — ${property.title}`,
+    html: `
       <h2 style="color:#000;margin:0 0 16px;">Property Verified ✓</h2>
       <p style="color:#4a4a4a;line-height:1.6;">
         Great news! Your property <strong>${property.title}</strong> has been verified and is now live on ${APP_NAME}.
@@ -155,7 +170,7 @@ export async function sendPropertyVerifiedEmail({ landlord, property }) {
         </a>
       </div>
     `,
-    });
+  });
 }
 
 export default sendEmail;
