@@ -78,6 +78,19 @@
   height: 2px;
   background: var(--color-black);
   transition: all var(--transition-fast);
+  transform-origin: center;
+}
+
+.mobileMenuOpen span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.mobileMenuOpen span:nth-child(2) {
+  opacity: 0;
+}
+
+.mobileMenuOpen span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
 }
 
 /* Hero */
@@ -586,6 +599,34 @@
 
   .mobileMenu {
     display: flex;
+  }
+
+  .navLinks.navLinksMobile {
+    display: flex;
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-primary);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-8);
+    z-index: 1000;
+    padding: var(--space-10);
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .navLinksMobile .navLink {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+  }
+
+  .navLinksMobile .navBtn {
+    width: 100%;
+    max-width: 300px;
+    padding: var(--space-4);
   }
 
   .heroTitle {

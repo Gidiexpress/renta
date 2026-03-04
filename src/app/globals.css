@@ -322,10 +322,9 @@ button {
   color: var(--text-on-primary);
 }
 
-.btn-primary:hover:not(:disabled) {
-  background-color: var(--color-primary-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+.btn-primary:active:not(:disabled) {
+  background-color: var(--color-primary-dark);
+  transform: translateY(0);
 }
 
 .btn-secondary {
@@ -333,9 +332,9 @@ button {
   color: var(--text-on-dark);
 }
 
-.btn-secondary:hover:not(:disabled) {
-  background-color: #333;
-  transform: translateY(-1px);
+.btn-secondary:active:not(:disabled) {
+  background-color: #000;
+  transform: translateY(0);
 }
 
 .btn-outline {
@@ -344,9 +343,9 @@ button {
   border: 2px solid var(--border-color);
 }
 
-.btn-outline:hover:not(:disabled) {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+.btn-outline:active:not(:disabled) {
+  background-color: var(--color-primary-light);
+  transform: translateY(0);
 }
 
 .btn-ghost {

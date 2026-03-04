@@ -1,6 +1,4 @@
-import styles from './page.module.css';
-import Link from 'next/link';
-import { CheckCircle, DollarSign, Ghost, Search, Ban, MapPin, Check } from 'lucide-react';
+import LandingHeader from '@/components/LandingHeader';
 
 export const metadata = {
   title: 'Renta — Verified Apartments for Rent in Ilorin',
@@ -19,23 +17,7 @@ export default function Home() {
   return (
     <div className={styles.page}>
       {/* Navigation */}
-      <nav className={styles.nav}>
-        <div className={`container ${styles.navInner}`}>
-          <Link href="/" className={styles.logo}>
-            Renta
-          </Link>
-          <div className={styles.navLinks}>
-            <Link href="/register" className={styles.navLink}>Browse Listings</Link>
-            <Link href="/login" className={`btn btn-outline ${styles.navBtn}`}>Log In</Link>
-            <Link href="/register" className={`btn btn-primary ${styles.navBtn}`}>Get Started</Link>
-          </div>
-          <button className={styles.mobileMenu} aria-label="Toggle menu" id="mobile-menu-btn">
-            <span></span>
-            <span></span>
-            <span></span>
-          </button>
-        </div>
-      </nav>
+      <LandingHeader />
 
       {/* Hero Section */}
       <section className={styles.hero}>
