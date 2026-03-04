@@ -13,17 +13,25 @@ export default function SupportWidget() {
     const [isLoading, setIsLoading] = useState(false);
     const scrollRef = useRef(null);
 
+    const quickQuestions = [
+        "Is inspection free?",
+        "How do I verify my home?",
+        "What are the service fees?",
+        "How does escrow work?"
+    ];
+
     useEffect(() => {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
     }, [messages]);
 
-    const handleSend = async (e) => {
-        e.preventDefault();
-        if (!input.trim() || isLoading) return;
+    const handleSend = async (e, customInput) => {
+        if (e) e.preventDefault();
+        const messageText = customInput || input;
+        if (!messageText.trim() || isLoading) return;
 
-        const userMsg = { role: 'user', content: input };
+        const userMsg = { role: 'user', content: messageText };
         setMessages(prev => [...prev, userMsg]);
         setInput('');
         setIsLoading(true);
@@ -32,7 +40,7 @@ export default function SupportWidget() {
             const response = await fetch('/api/support/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: input, history: messages })
+                body: JSON.stringify({ message: messageText, history: messages })
             });
 
             const data = await response.json();
@@ -100,6 +108,16 @@ export default function SupportWidget() {
                             </div>
                         )}
                     </div>
+
+                    {messages.length === 1 && !isLoading && (
+                        <div className={styles.quickActions}>
+                            {quickQuestions.map((q, idx) => (
+                                <button key={idx} onClick={() => handleSend(null, q)}>
+                                    {q}
+                                </button>
+                            ))}
+                        </div>
+                    )}
 
                     <form onSubmit={handleSend} className={styles.inputArea}>
                         <input
