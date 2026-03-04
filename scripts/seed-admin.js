@@ -4,13 +4,18 @@ const prisma = new PrismaClient();
 
 async function seedAdmin() {
     try {
-        // 1. Revert landlord account
-        console.log('Reverting maxemmily+landlord@gmail.com to LANDLORD...');
-        await prisma.user.update({
-            where: { email: 'maxemmily+landlord@gmail.com' },
-            data: { role: 'LANDLORD', adminRole: null }
-        });
-        console.log('  ✓ Reverted to LANDLORD');
+        // 1. Revert landlord account if exists
+        console.log('Reverting maxemmily+landlord@gmail.com to LANDLORD (if exists)...');
+        const landlord = await prisma.user.findUnique({ where: { email: 'maxemmily+landlord@gmail.com' } });
+        if (landlord) {
+            await prisma.user.update({
+                where: { email: 'maxemmily+landlord@gmail.com' },
+                data: { role: 'LANDLORD', adminRole: null }
+            });
+            console.log('  ✓ Reverted to LANDLORD');
+        } else {
+            console.log('  - Landlord account not found, skipping reversal.');
+        }
 
         // 2. Create dedicated super admin
         console.log('Creating dedicated super admin...');
