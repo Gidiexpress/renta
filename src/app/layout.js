@@ -3,6 +3,7 @@ import './globals.css';
 import Providers from '@/components/Providers';
 
 import ReferralTracker from '@/components/ReferralTracker';
+import SupportWidget from '@/components/SupportWidget';
 
 const spartan = League_Spartan({
   subsets: ['latin'],
@@ -23,13 +24,13 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning className={`${spartan.variable} ${dmSans.variable}`}>
-      <body suppressHydrationWarning>
+      <body className="antialiased">
         <Providers>
           <ReferralTracker />
           {children}
+          <SupportWidget />
         </Providers>
       </body>
     </html>
   );
 }
-

@@ -15,8 +15,7 @@ export default auth((req) => {
         '/api/properties',       // Property listings
         '/api/locations/cities', // Fetching cities
         '/api/locations/areas',  // Fetching areas
-        '/api/webhooks/paystack', // Payment webhooks
-        '/api/admin/test-email'  // Temporary diagnostic route
+        '/api/webhooks/paystack' // Payment webhooks
     ];
     // Allow public API routes exactly, or any NextAuth routes which handle their own sessions
     const isPublicApiRoute = publicApiRoutes.includes(pathname) || pathname.startsWith('/api/auth');

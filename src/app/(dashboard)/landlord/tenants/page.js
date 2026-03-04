@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Users, Home, MapPin, Calendar, Phone, CheckCircle, Clock } from 'lucide-react';
+import { Users, Home, MapPin, Calendar, Phone, CheckCircle, Clock, MessageCircle } from 'lucide-react';
+import Link from 'next/link';
 
 export default function LandlordTenantsPage() {
     const [rentals, setRentals] = useState([]);
@@ -86,15 +87,24 @@ export default function LandlordTenantsPage() {
                                         <Calendar size={12} style={{ display: 'inline', marginRight: '4px' }} />
                                         {new Date(rental.startDate).toLocaleDateString('en-GB', { dateStyle: 'medium' })}
                                     </p>
-                                    {rental.tenant?.tenantProfile && (
-                                        <button
-                                            onClick={() => setExpandedTenant(expandedTenant === rental.id ? null : rental.id)}
-                                            className="btn btn-outline btn-sm mt-1"
-                                            style={{ padding: '4px 8px', fontSize: '11px' }}
+                                    <div className="flex gap-2 mt-2">
+                                        <Link
+                                            href={`/landlord/messages?startThreadWith=${rental.tenantId}&rentalId=${rental.id}&title=${encodeURIComponent(rental.property?.title)}`}
+                                            className="btn btn-sm btn-primary"
+                                            style={{ fontSize: '11px', padding: '4px 8px' }}
                                         >
-                                            {expandedTenant === rental.id ? 'Hide Profile' : 'View Profile'}
-                                        </button>
-                                    )}
+                                            <MessageCircle size={12} className="mr-1" /> Message Tenant
+                                        </Link>
+                                        {rental.tenant?.tenantProfile && (
+                                            <button
+                                                onClick={() => setExpandedTenant(expandedTenant === rental.id ? null : rental.id)}
+                                                className="btn btn-outline btn-sm"
+                                                style={{ padding: '4px 8px', fontSize: '11px' }}
+                                            >
+                                                {expandedTenant === rental.id ? 'Hide Profile' : 'View Profile'}
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 

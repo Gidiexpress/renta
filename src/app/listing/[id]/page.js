@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/db';
 import { notFound } from 'next/navigation';
-import Link from 'next/link';
-import { MapPin, Home as HomeIcon, CheckCircle, Info, Sparkles, UserPlus } from 'lucide-react';
+import { MapPin, Home as HomeIcon, CheckCircle, Info, Sparkles, UserPlus, MessageCircle } from 'lucide-react';
+import { auth } from '@/lib/auth';
 import styles from '@/app/(dashboard)/tenant/listing/[id]/listing.module.css';
 
 const formatType = (type) => {
@@ -54,6 +54,8 @@ export default async function PublicListingPage({ params }) {
         },
         include: { images: { orderBy: { isPrimary: 'desc' } }, city: true, area: true }
     });
+
+    const session = await auth();
 
     if (!property) notFound();
 

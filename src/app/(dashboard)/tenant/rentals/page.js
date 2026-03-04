@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { FileText, Home, MapPin, Calendar, Shield, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+import { FileText, Home, MapPin, Calendar, Shield, CheckCircle, Clock, AlertTriangle, MessageCircle } from 'lucide-react';
+import Link from 'next/link';
 
 const statusConfig = {
     PENDING: { label: 'Pending', badge: 'badge-pending', icon: Clock },
@@ -148,16 +149,25 @@ export default function TenantRentalsPage() {
                                                     <span className="text-xs text-muted">Rental ID</span>
                                                     <p className="font-bold text-sm">#{rental.id}</p>
                                                 </div>
-                                                {rental.escrow?.status === 'HELD' && (
-                                                    <button
-                                                        className="btn btn-sm btn-outline"
-                                                        style={{ borderColor: 'var(--color-error)', color: 'var(--color-error)' }}
-                                                        onClick={() => handleDispute(rental.escrow.id)}
+                                                <div className="flex gap-2">
+                                                    <Link
+                                                        href={`/tenant/messages?startThreadWith=${rental.property?.landlordId}&rentalId=${rental.id}&title=${encodeURIComponent(rental.property?.title)}`}
+                                                        className="btn btn-sm btn-primary"
                                                     >
-                                                        <AlertTriangle size={14} style={{ marginRight: 4 }} />
-                                                        Raise Dispute
-                                                    </button>
-                                                )}
+                                                        <MessageCircle size={14} style={{ marginRight: 4 }} />
+                                                        Chat Landlord
+                                                    </Link>
+                                                    {rental.escrow?.status === 'HELD' && (
+                                                        <button
+                                                            className="btn btn-sm btn-outline"
+                                                            style={{ borderColor: 'var(--color-error)', color: 'var(--color-error)' }}
+                                                            onClick={() => handleDispute(rental.escrow.id)}
+                                                        >
+                                                            <AlertTriangle size={14} style={{ marginRight: 4 }} />
+                                                            Raise Dispute
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

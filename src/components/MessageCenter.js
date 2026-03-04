@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Send, User as UserIcon, Loader2, MessageSquare, ArrowLeft } from 'lucide-react';
 import { useSession } from 'next-auth/react';
+import { useSearchParams } from 'next/navigation';
 
 export default function MessageCenter() {
     const { data: session } = useSession();
@@ -15,6 +16,7 @@ export default function MessageCenter() {
     const [loadingConvos, setLoadingConvos] = useState(true);
     const [loadingMessages, setLoadingMessages] = useState(false);
     const [sending, setSending] = useState(false);
+    const searchParams = useSearchParams();
 
     const messagesEndRef = useRef(null);
 
@@ -48,6 +50,34 @@ export default function MessageCenter() {
             if (res.ok) {
                 const data = await res.json();
                 setConversations(data);
+
+                // Handle "Start Thread" from query params
+                const startWith = searchParams.get('startThreadWith');
+                const propertyTitle = searchParams.get('title');
+                const rentalId = searchParams.get('rentalId');
+
+                if (startWith && !activeContact) {
+                    const contactId = parseInt(startWith);
+                    // Check if conversation already exists
+                    const existingConv = data.find(c => c.contact.id === contactId);
+
+                    if (existingConv) {
+                        setActiveContact(existingConv.contact);
+                    } else {
+                        // Fetch user info for the new contact
+                        const userRes = await fetch(`/api/users/${contactId}`);
+                        if (userRes.ok) {
+                            const userData = await userRes.json();
+                            setActiveContact(userData);
+                        }
+                    }
+
+                    if (rentalId && propertyTitle) {
+                        setNewMessage(`Hi, I'm contacting you regarding my rental for "${decodeURIComponent(propertyTitle)}" (ID: #${rentalId}).`);
+                    } else if (propertyTitle) {
+                        setNewMessage(`Hi, I'm interested in "${decodeURIComponent(propertyTitle)}". Is it still available?`);
+                    }
+                }
             }
         } catch (err) {
             console.error('Failed to fetch conversations', err);

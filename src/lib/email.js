@@ -1,46 +1,4 @@
-import nodemailer from 'nodemailer';
-
-/*
- * 🛠️ Resend Configuration
- * To use **Resend**, set the following in your Render environment variables:
- *
- * - **`SMTP_HOST`**: `smtp.resend.com`
- * - **`SMTP_PORT`**: `587`
- * - **`SMTP_USER`**: `resend` (Always use this exact string)
- * - **`SMTP_PASS`**: Your API Key (from Resend dashboard, starts with `re_...`)
- * - **`EMAIL_FROM`**: Your verified domain email (e.g. `hello@renta.ng`)
- *
- * > [!IMPORTANT]
- * > If you haven't verified a domain yet, Resend requires you to use `onboarding@resend.dev` as your `EMAIL_FROM` for testing.
- *
- * 📧 Design & Templates
- */
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.resend.com',
-  port: parseInt(process.env.SMTP_PORT || '465'),
-  secure: true, // true for 465, false for other ports
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-  debug: true, // show debug output
-  logger: true, // log information in console
-  connectionTimeout: 15000, // Increased to 15 seconds
-  greetingTimeout: 15000,
-  socketTimeout: 15000,
-});
-
-// Diagnostic log to verify env vars are loaded (masked)
-console.log('Email Transport Config:', {
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT,
-  user: process.env.SMTP_USER,
-  pass: process.env.SMTP_PASS ? '********' : 'MISSING',
-  from: process.env.EMAIL_FROM
-});
-
 const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || 'Renta';
-const FROM = process.env.EMAIL_FROM || 'noreply@renta.ng';
 
 /**
  * Send an email via Resend REST API (Bypasses SMTP port blocks)
