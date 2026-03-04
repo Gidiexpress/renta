@@ -1,3 +1,6 @@
+import styles from './page.module.css';
+import Link from 'next/link';
+import { CheckCircle, DollarSign, Ghost, Search, Ban, MapPin, Check } from 'lucide-react';
 import LandingHeader from '@/components/LandingHeader';
 
 export const metadata = {
