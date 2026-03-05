@@ -157,6 +157,8 @@ export async function POST(request) {
             );
         }
 
+        const body = await request.json();
+
         // Validation using Zod
         const { propertyCreationSchema } = await import('@/lib/validations');
         const validationResult = propertyCreationSchema.safeParse(body);
