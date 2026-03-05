@@ -64,11 +64,18 @@ export function generateReference(prefix = 'RENTA') {
 /**
  * Validate Paystack webhook signature
  */
-export function validateWebhookSignature(body, signature) {
-    const crypto = require('crypto');
+const crypto = require('crypto');
+
+/**
+ * Validate Paystack webhook signature
+ * Note: body MUST be the raw request text (string), not a JSON object
+ */
+export function validateWebhookSignature(rawBody, signature) {
+    if (!signature) return false;
+
     const hash = crypto
         .createHmac('sha512', PAYSTACK_SECRET)
-        .update(JSON.stringify(body))
+        .update(rawBody)
         .digest('hex');
     return hash === signature;
 }

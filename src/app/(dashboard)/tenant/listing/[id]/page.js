@@ -41,7 +41,7 @@ export default function TenantPropertyDetails() {
                 const data = await res.json();
 
                 if (!res.ok) throw new Error(data.error || 'Failed to fetch property details');
-                setProperty(data);
+                setProperty(data.property || data); // Store the property object directly
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -176,14 +176,13 @@ export default function TenantPropertyDetails() {
                         <p className={styles.description}>{property.description}</p>
                     </div>
 
-                    {/* Amenities Section */}
-                    {property.amenities && property.amenities.length > 0 && (
+                    {property.amenities && (
                         <div className={styles.section}>
                             <h3 className={styles.sectionTitle}>
                                 <ShieldCheck size={24} className="text-primary" /> Amenities & Facilities
                             </h3>
                             <div className={styles.amenitiesGrid}>
-                                {property.amenities.map((amenity, i) => (
+                                {(typeof property.amenities === 'string' ? JSON.parse(property.amenities) : property.amenities).map((amenity, i) => (
                                     <div key={i} className={styles.amenityItem}>
                                         <CheckCircle size={16} className="text-success" /> {amenity}
                                     </div>

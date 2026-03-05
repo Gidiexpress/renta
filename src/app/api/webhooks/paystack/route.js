@@ -5,11 +5,12 @@ import { validateWebhookSignature } from '@/lib/paystack';
 // POST /api/webhooks/paystack — Handle Paystack webhook
 export async function POST(request) {
     try {
-        const body = await request.json();
+        const rawBody = await request.text();
+        const body = JSON.parse(rawBody);
         const signature = request.headers.get('x-paystack-signature');
 
         // Validate webhook signature
-        if (!validateWebhookSignature(body, signature)) {
+        if (!validateWebhookSignature(rawBody, signature)) {
             return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
         }
 
@@ -48,7 +49,7 @@ export async function POST(request) {
                     featuredUntil.setDate(featuredUntil.getDate() + 7);
 
                     await prisma.property.update({
-                        where: { id: parseInt(propertyId) },
+                        where: { id: propertyId }, // Property ID is a string (CUID)
                         data: {
                             isFeatured: true,
                             featuredUntil: featuredUntil

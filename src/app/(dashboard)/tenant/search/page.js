@@ -174,7 +174,7 @@ export default function TenantSearchPage() {
                 <>
                     <div className={dashStyles.propertyGrid}>
                         {properties.map(property => (
-                            <Link key={property.id} href={`/listing/${property.slug || property.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                            <Link key={property.id} href={`/tenant/listing/${property.slug || property.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                                 <div className={`${dashStyles.propertyCard} card-interactive ${property.isFeatured ? 'border-primary' : ''}`} style={property.isFeatured ? { border: '2px solid var(--color-primary)' } : {}}>
                                     <div className={dashStyles.propertyImage}>
                                         {property.images?.[0] ? (

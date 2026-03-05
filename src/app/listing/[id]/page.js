@@ -58,6 +58,16 @@ export default async function PublicListingPage({ params }) {
 
     const session = await auth();
 
+    // Redirect authenticated users to their respective dashboard view
+    if (session) {
+        const role = session.user.role.toLowerCase();
+        // Redirect to dashboard listing view if it exists for the role
+        // For now, mapping all to /role/listing/[id]
+        const redirectPath = `/${role}/listing/${id}`;
+        const { redirect } = await import('next/navigation');
+        redirect(redirectPath);
+    }
+
     if (!property) notFound();
 
     const formattedType = formatType(property.type);
