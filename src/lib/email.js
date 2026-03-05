@@ -174,4 +174,157 @@ export async function sendPropertyVerifiedEmail({ landlord, property }) {
   });
 }
 
+/**
+ * NIN Verification Status Template
+ */
+export async function sendNinStatusEmail(user, status, reason = '') {
+  const isApproved = status === 'VERIFIED';
+  return sendEmail({
+    to: user.email,
+    subject: `Identity Verification ${isApproved ? 'Approved' : 'Action Required'}`,
+    html: `
+      <h2 style="color:#000;margin:0 0 16px;">Identity Verification</h2>
+      <p style="color:#4a4a4a;line-height:1.6;">
+        ${isApproved
+        ? `Congratulations ${user.firstName}! Your NIN verification was successful. You now have full access to the ${APP_NAME} platform.`
+        : `Hello ${user.firstName}, unfortunately, your identity verification could not be completed at this time.`
+      }
+      </p>
+      ${!isApproved && reason ? `<p style="padding:12px;background:#fef2f2;border-left:4px solid #ef4444;color:#991b1b;"><strong>Reason:</strong> ${reason}</p>` : ''}
+      <div style="text-align:center;margin:24px 0;">
+        <a href="${process.env.NEXT_PUBLIC_APP_URL}/profile" 
+           style="display:inline-block;background-color:#000;color:#FDA829;font-weight:600;padding:12px 32px;border-radius:8px;text-decoration:none;">
+          ${isApproved ? 'Go to Profile' : 'Retry Verification'}
+        </a>
+      </div>
+    `,
+  });
+}
+
+/**
+ * Property Rejection Template
+ */
+export async function sendPropertyRejectedEmail(landlord, property, reason) {
+  return sendEmail({
+    to: landlord.email,
+    subject: `Update Required: ${property.title}`,
+    html: `
+      <h2 style="color:#000;margin:0 0 16px;">Listing Update Required</h2>
+      <p style="color:#4a4a4a;line-height:1.6;">
+        Your listing for <strong>${property.title}</strong> was reviewed by our team and requires some changes before it can go live.
+      </p>
+      <div style="padding:16px;background:#fff7ed;border-left:4px solid #f97316;margin:16px 0;">
+        <strong style="color:#9a3412;">Feedback from Reviewer:</strong><br/>
+        <p style="margin:8px 0 0;color:#c2410c;">${reason}</p>
+      </div>
+      <p style="color:#7a7a7a;font-size:14px;">Once updated, our team will re-verify the property within 24 hours.</p>
+    `,
+  });
+}
+
+/**
+ * Inspection Booking Template
+ */
+export async function sendInspectionBookedEmail({ tenant, landlord, property, date, time }) {
+  // Send to Tenant
+  await sendEmail({
+    to: tenant.email,
+    subject: `Inspection Scheduled — ${property.title}`,
+    html: `
+      <h2 style="color:#000;margin:0 0 16px;">Inspection Confirmed!</h2>
+      <p style="color:#4a4a4a;line-height:1.6;">
+        You have successfully booked an inspection for <strong>${property.title}</strong>.
+      </p>
+      <div style="margin:20px 0;padding:16px;background:#f8fafc;border-radius:8px;">
+        <p style="margin:0;color:#64748b;"><strong>Date:</strong> ${date}</p>
+        <p style="margin:4px 0 0;color:#64748b;"><strong>Time:</strong> ${time}</p>
+        <p style="margin:4px 0 0;color:#64748b;"><strong>Address:</strong> ${property.address}</p>
+      </div>
+      <p style="font-size:13px;color:#ef4444;">Please ensure you are on time. If you need to cancel, do so via your dashboard.</p>
+    `,
+  });
+
+  // Notify Landlord
+  return sendEmail({
+    to: landlord.email,
+    subject: `New Inspection Booking — ${property.title}`,
+    html: `
+      <h2 style="color:#000;margin:0 0 16px;">New Booking Alert</h2>
+      <p style="color:#4a4a4a;line-height:1.6;">
+        A potential tenant has booked an inspection for your property.
+      </p>
+      <p><strong>Tenant:</strong> ${tenant.firstName} ${tenant.lastName}</p>
+      <p><strong>Schedule:</strong> ${date} at ${time}</p>
+    `,
+  });
+}
+
+/**
+ * Maintenance Update Template
+ */
+export async function sendMaintenanceUpdateEmail({ tenant, request, newStatus }) {
+  const statusColors = {
+    'IN_PROGRESS': '#3b82f6',
+    'RESOLVED': '#10b981',
+  };
+
+  return sendEmail({
+    to: tenant.email,
+    subject: `Maintenance Status Update: ${request.title}`,
+    html: `
+      <h2 style="color:#000;margin:0 0 16px;">Repair Update</h2>
+      <p style="color:#4a4a4a;line-height:1.6;">
+        The status of your maintenance request <strong>"${request.title}"</strong> has been updated.
+      </p>
+      <div style="display:inline-block;padding:4px 12px;background:${statusColors[newStatus] || '#000'};color:#fff;border-radius:20px;font-size:12px;font-weight:600;">
+        ${newStatus.replace('_', ' ')}
+      </div>
+    `,
+  });
+}
+
+/**
+ * Commission Earned Template
+ */
+export async function sendCommissionEarnedEmail(user, amount, type) {
+  return sendEmail({
+    to: user.email,
+    subject: `You've Earned a Commission! 💰`,
+    html: `
+      <h2 style="color:#000;margin:0 0 16px;">Nice Work, ${user.firstName}!</h2>
+      <p style="color:#4a4a4a;line-height:1.6;">
+        You just earned a <strong>${type}</strong> commission of <strong>₦${Number(amount).toLocaleString()}</strong> from a successful rental.
+      </p>
+      <div style="text-align:center;margin:24px 0;">
+        <a href="${process.env.NEXT_PUBLIC_APP_URL}/wallet" 
+           style="display:inline-block;background-color:#000;color:#FDA829;font-weight:600;padding:12px 32px;border-radius:8px;text-decoration:none;">
+          View Your Wallet
+        </a>
+      </div>
+    `,
+  });
+}
+
+/**
+ * New Message Alert Template
+ */
+export async function sendNewMessageEmail(receiver, senderName) {
+  return sendEmail({
+    to: receiver.email,
+    subject: `New Message from ${senderName}`,
+    html: `
+      <h2 style="color:#000;margin:0 0 16px;">You have a new message!</h2>
+      <p style="color:#4a4a4a;line-height:1.6;">
+        <strong>${senderName}</strong> has sent you a message regarding your rental on ${APP_NAME}.
+      </p>
+      <div style="text-align:center;margin:24px 0;">
+        <a href="${process.env.NEXT_PUBLIC_APP_URL}/messages" 
+           style="display:inline-block;background-color:#FDA829;color:#000;font-weight:600;padding:12px 32px;border-radius:8px;text-decoration:none;">
+          Reply Now
+        </a>
+      </div>
+    `,
+  });
+}
+
 export default sendEmail;
