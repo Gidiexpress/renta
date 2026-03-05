@@ -49,6 +49,8 @@ const MENU_ITEMS = {
         { href: '/admin', icon: Home, label: 'Dashboard' },
         { href: '/admin/users', icon: Users, label: 'Users' },
         { href: '/admin/properties', icon: Building, label: 'Properties' },
+        { href: '/admin/promotions', icon: Star, label: 'Promotions' },
+        { href: '/admin/finance', icon: DollarSign, label: 'Financials' },
         { href: '/admin/leads', icon: ClipboardList, label: 'Scout Leads' },
         { href: '/admin/rentals', icon: FileText, label: 'Rentals' },
         { href: '/admin/escrow', icon: Shield, label: 'Escrow' },

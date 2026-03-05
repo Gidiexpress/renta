@@ -53,46 +53,58 @@ export async function POST(request, { params }) {
 
         try {
             await mkdir(uploadDir, { recursive: true });
+            console.log(`[IMAGE UPLOAD] Directory created/verified: ${uploadDir}`);
         } catch (dirError) {
-            console.error('[IMAGE UPLOAD] Fatal: Failed to create upload directory:', dirError);
-            return NextResponse.json({ error: 'Server could not create storage directory' }, { status: 500 });
+            console.error('[IMAGE UPLOAD] Fatal Error: Failed to create upload directory:', dirError);
+            return NextResponse.json({ error: `Server could not create storage directory: ${dirError.message}` }, { status: 500 });
         }
 
         const savedImages = [];
-
         const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
         const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
+            console.log(`[IMAGE UPLOAD] Processing file ${i + 1}/${files.length}: ${file.name} (${file.type}, ${file.size} bytes)`);
 
             if (!allowedMimeTypes.includes(file.type)) {
+                console.error(`[IMAGE UPLOAD] Invalid type: ${file.type}`);
                 return NextResponse.json({ error: `Invalid file type: ${file.name}. Only JPEG, PNG, and WebP are allowed.` }, { status: 400 });
             }
 
             if (file.size > MAX_FILE_SIZE) {
+                console.error(`[IMAGE UPLOAD] File too large: ${file.size}`);
                 return NextResponse.json({ error: `File too large: ${file.name}. Maximum size is 5MB.` }, { status: 400 });
             }
 
-            const bytes = await file.arrayBuffer();
-            const buffer = Buffer.from(bytes);
+            try {
+                const bytes = await file.arrayBuffer();
+                const buffer = Buffer.from(bytes);
 
-            // Generate unique filename, deriving extension securely from MIME type
-            const ext = file.type.split('/')[1];
-            const filename = `${Date.now()}-${i}.${ext}`;
-            const filepath = path.join(uploadDir, filename);
+                // Generate unique filename, deriving extension securely from MIME type
+                const ext = file.type.split('/')[1] || 'jpg';
+                const filename = `${Date.now()}-${i}.${ext}`;
+                const filepath = path.join(uploadDir, filename);
 
-            await writeFile(filepath, buffer);
+                await writeFile(filepath, buffer);
+                console.log(`[IMAGE UPLOAD] File written to disk: ${filepath}`);
 
-            const imageRecord = await prisma.propertyImage.create({
-                data: {
-                    propertyId: id,
-                    url: `/uploads/properties/${id}/${filename}`,
-                    isPrimary: isPrimary && i === 0 && existingCount === 0,
-                },
-            });
+                const imageUrl = `/uploads/properties/${id}/${filename}`;
+                const imageRecord = await prisma.propertyImage.create({
+                    data: {
+                        propertyId: id,
+                        url: imageUrl,
+                        isPrimary: isPrimary && i === 0 && existingCount === 0,
+                    },
+                });
 
-            savedImages.push(imageRecord);
+                console.log(`[IMAGE UPLOAD] DB record created: ${imageRecord.id} -> ${imageUrl}`);
+                savedImages.push(imageRecord);
+            } catch (fileError) {
+                console.error(`[IMAGE UPLOAD] Error processing file ${file.name}:`, fileError);
+                // Continue with other files or fail? For now, fail to be safe.
+                return NextResponse.json({ error: `Failed to save image ${file.name}: ${fileError.message}` }, { status: 500 });
+            }
         }
 
         // If this is the first image and none are primary, make it primary

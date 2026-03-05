@@ -1,15 +1,29 @@
-'use client';
-
 import { useSession } from 'next-auth/react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Plus, Building, DollarSign, Home } from 'lucide-react';
+import { Plus, Building, DollarSign, Home, CheckCircle2 } from 'lucide-react';
+import { Suspense } from 'react';
 import styles from '../tenant/dashboard.module.css';
 
-export default function LandlordDashboard() {
+function DashboardContent() {
     const { data: session } = useSession();
+    const searchParams = useSearchParams();
+    const isPromoted = searchParams.get('promoted') === 'true';
 
     return (
         <div className="fade-in">
+            {isPromoted && (
+                <div className="card mb-6" style={{ background: '#f0fdf4', borderLeft: '4px solid #22c55e', padding: 'var(--space-4)' }}>
+                    <div className="flex items-center gap-3">
+                        <CheckCircle2 className="text-success" size={24} />
+                        <div>
+                            <h4 className="font-bold text-success">Payment Successful!</h4>
+                            <p className="text-sm text-muted">Your listing has been promoted and will appear at the top of search results.</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className={styles.welcomeSection}>
                 <h2>Welcome, {session?.user?.firstName || 'Landlord'}!</h2>
                 <p className="text-muted">Manage your properties and tenants</p>
@@ -97,5 +111,13 @@ export default function LandlordDashboard() {
                 </Link>
             </div>
         </div>
+    );
+}
+
+export default function LandlordDashboard() {
+    return (
+        <Suspense fallback={<div className="animate-pulse flex items-center justify-center p-20">Loading dashboard...</div>}>
+            <DashboardContent />
+        </Suspense>
     );
 }
