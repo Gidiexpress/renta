@@ -215,7 +215,7 @@ export default function TenantPropertyDetails() {
                             <ul className={styles.breakdown}>
                                 <li className={styles.breakdownItem}>
                                     <span>Annual Rent</span>
-                                    <span>₦{Number(breakdown.rentPrice).toLocaleString()}</span>
+                                    <span>₦{Number(breakdown.rent).toLocaleString()}</span>
                                 </li>
                                 <li className={styles.breakdownItem}>
                                     <span>Renta Service Fee (10%)</span>

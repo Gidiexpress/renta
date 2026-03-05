@@ -9,8 +9,10 @@ export async function GET(request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        const userId = parseInt(session.user.id);
+
         const profile = await prisma.tenantProfile.findUnique({
-            where: { userId: session.user.id }
+            where: { userId }
         });
 
         return NextResponse.json(profile || {});
@@ -28,6 +30,7 @@ export async function POST(request) {
         }
 
         const data = await request.json();
+        const userId = parseInt(session.user.id);
 
         // Basic validation
         if (!data.employmentStatus || !data.monthlyIncome) {
@@ -35,17 +38,17 @@ export async function POST(request) {
         }
 
         const profile = await prisma.tenantProfile.upsert({
-            where: { userId: session.user.id },
+            where: { userId },
             update: {
                 employmentStatus: data.employmentStatus,
-                monthlyIncome: data.monthlyIncome,
+                monthlyIncome: Number(data.monthlyIncome),
                 employerName: data.employerName || null,
                 previousLandlordReference: data.previousLandlordReference || null,
             },
             create: {
-                userId: session.user.id,
+                userId,
                 employmentStatus: data.employmentStatus,
-                monthlyIncome: data.monthlyIncome,
+                monthlyIncome: Number(data.monthlyIncome),
                 employerName: data.employerName || null,
                 previousLandlordReference: data.previousLandlordReference || null,
             }

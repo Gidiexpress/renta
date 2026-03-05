@@ -129,6 +129,23 @@ export default function LandlordPropertyView() {
                             <div className="text-muted text-sm mt-2">Current Listing Price</div>
                         </div>
 
+                        {property.breakdown && (
+                            <ul className={styles.breakdown}>
+                                <li className={styles.breakdownItem}>
+                                    <span>Annual Rent</span>
+                                    <span>₦{Number(property.breakdown.rent).toLocaleString()}</span>
+                                </li>
+                                <li className={styles.breakdownItem}>
+                                    <span>Renta Service Fee (10%)</span>
+                                    <span>₦{Number(property.breakdown.serviceFee).toLocaleString()}</span>
+                                </li>
+                                <li className={`${styles.breakdownItem} ${styles.totalRow}`}>
+                                    <span>Total Tenant Pays</span>
+                                    <span>₦{Number(property.breakdown.total).toLocaleString()}</span>
+                                </li>
+                            </ul>
+                        )}
+
                         {isOwner ? (
                             <div className="mt-8 flex flex-col gap-4">
                                 <Link href={`/landlord/properties/${property.id}/edit`} className="btn btn-primary btn-lg sidebarAction" style={{ height: '64px' }}>
