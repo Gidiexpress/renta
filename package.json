@@ -14,7 +14,7 @@
     "bcryptjs": "^3.0.3",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.576.0",
-    "next": "15.1.6",
+    "next": "^16.1.6",
     "next-auth": "^5.0.0-beta.30",
     "nodemailer": "7.0.13",
     "prisma": "^6.19.2",
