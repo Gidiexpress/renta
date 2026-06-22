@@ -1,0 +1,55 @@
+# ============================================================
+# RENTA — PRODUCTION ENVIRONMENT VARIABLES
+# ============================================================
+# Copy these into the cPanel Node.js app "Environment Variables"
+# panel. Do NOT upload this file to the server directly.
+# ============================================================
+
+# ── Database ─────────────────────────────────────────────────
+# Using Aiven cloud MySQL — keep as-is unless you migrate to cPanel DB
+DATABASE_URL="
+# ── NextAuth ──────────────────────────────────────────────────
+# IMPORTANT: Replace yourdomain.com with your actual domain
+AUTH_SECRET="c8434f914b0d47c59ee63a7385dde2e0"
+NEXTAUTH_SECRET="c8434f914b0d47c59ee63a7385dde2e0"
+NEXTAUTH_URL="https://yourdomain.com"
+AUTH_URL="https://yourdomain.com"
+
+# ── Paystack ──────────────────────────────────────────────────
+# Replace with live keys when going live: sk_test_ → sk_live_
+PAYSTACK_SECRET_KEY="sk_test_xxxxx"
+PAYSTACK_PUBLIC_KEY="pk_test_xxxxx"
+NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY="pk_test_xxxxx"
+
+# ── Email (Brevo API) ─────────────────────────────────────────
+# SMTP_PASS stores your Brevo API key (not an SMTP password)
+# Get it from: https://app.brevo.com/settings/keys/api
+SMTP_HOST="smtp-relay.brevo.com"
+SMTP_PORT=587
+SMTP_USER="your-brevo-login-email@example.com"
+SMTP_PASS="your-brevo-api-key-here"
+EMAIL_FROM="noreply@yourdomain.com"
+
+# ── VerifyMe (NIN Verification) ───────────────────────────────
+VERIFYME_API_KEY="your-verifyme-key-here"
+VERIFYME_API_URL="https://vapi.verifyme.ng/v1"
+
+# ── App URLs ─────────────────────────────────────────────────
+# IMPORTANT: Replace with your real domain
+NEXT_PUBLIC_APP_URL="https://yourdomain.com"
+NEXT_PUBLIC_APP_NAME="Renta"
+
+# ── Google Maps ───────────────────────────────────────────────
+# Whitelist your domain in Google Cloud Console
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=""
+
+# ── Cloudflare R2 (Image Storage) ────────────────────────────
+# Only needed if you use R2 for image storage (optional — app falls back to local uploads)
+# R2_ACCOUNT_ID=""
+# R2_ACCESS_KEY_ID=""
+# R2_SECRET_ACCESS_KEY=""
+# R2_BUCKET_NAME=""
+# R2_PUBLIC_URL=""
+
+# ── Node Environment ──────────────────────────────────────────
+NODE_ENV="production"
