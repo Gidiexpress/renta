@@ -101,25 +101,35 @@ chown renta:renta /var/www/renta
 
 ---
 
-## STEP 8: Upload app files
+## STEP 8: Clone the repository
 
-On your local Windows machine, zip the project files:
-- Zip everything EXCEPT `node_modules/` and `.git/`
-- Name it `renta.zip`
-
-Upload via SCP (run this on your local machine in PowerShell):
 ```bash
-scp "C:\Users\USER\Documents\Renta 3\renta\renta.zip" root@YOUR_SERVER_IP:/var/www/renta/
+# Install git if not already there
+apt install -y git
+
+# Clone the repo into the app directory
+git clone https://github.com/Gidiexpress/renta.git /var/www/renta
+
+# Verify files are there
+cd /var/www/renta
+ls -la   # Should show server.js, package.json, src/, prisma/, etc.
 ```
 
-Or use WinSCP (free GUI): https://winscp.net/eng/download.php
+> **Note:** Since `.env` is gitignored, you'll create it manually in Step 9.
+> The `.next/` build folder is also gitignored — you'll build it in Step 10.
 
-Then on the server:
+---
+
+## Future updates (after initial setup)
+
+Whenever you push new code to GitHub, update the server with:
+
 ```bash
 cd /var/www/renta
-unzip renta.zip
-# Make sure files are at /var/www/renta/ not /var/www/renta/renta/
-ls -la   # Should show server.js, package.json, .next/, etc.
+git pull
+npm install --omit=dev
+npm run build
+pm2 reload renta
 ```
 
 ---
@@ -157,16 +167,25 @@ Save: Ctrl+X → Y → Enter
 
 ---
 
-## STEP 10: Install dependencies and set up database
+## STEP 10: Install dependencies, build, and set up database
 
 ```bash
 cd /var/www/renta
+
+# Install dependencies
 npm install --omit=dev
+
+# Generate Prisma client
 npx prisma generate
+
+# Build the Next.js app
+npm run build
+
+# Run database migrations
 npx prisma migrate deploy
 ```
 
-If migrate deploy hangs (shared hosting issue), import schema via MySQL directly:
+If `migrate deploy` hangs for more than 2 minutes, Ctrl+C and import the schema manually:
 ```bash
 mysql -u renta_user -p renta_db < prisma/cpanel-schema.sql
 ```
