@@ -15,6 +15,7 @@ export async function GET() {
                     select: {
                         title: true,
                         address: true,
+                        landlordId: true,
                         landlord: {
                             select: { firstName: true, lastName: true }
                         },
@@ -28,7 +29,7 @@ export async function GET() {
                     select: { firstName: true, lastName: true }
                 },
                 escrow: { select: { id: true, status: true } },
-                agreement: { select: { tenantSigned: true, landlordSigned: true } }
+                agreement: { select: { tenantSigned: true, landlordSigned: true, tenantSignature: true, tenantSignedAt: true } }
             },
             orderBy: { createdAt: 'desc' }
         });

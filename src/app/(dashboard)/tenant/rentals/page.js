@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { FileText, Home, MapPin, Calendar, Shield, CheckCircle, Clock, AlertTriangle, MessageCircle } from 'lucide-react';
+import { FileText, Home, MapPin, Calendar, Shield, CheckCircle, Clock, AlertTriangle, MessageCircle, Download } from 'lucide-react';
 import Link from 'next/link';
-import SignaturePad from '@/components/SignaturePad';
+import RentalAgreementModal from '@/components/RentalAgreementModal';
 
 const statusConfig = {
     PENDING: { label: 'Pending', badge: 'badge-pending', icon: Clock },
@@ -40,33 +40,27 @@ export default function TenantRentalsPage() {
         fetchRentals();
     }, []);
 
-    const handleSign = async (signature) => {
+    const handleSign = async (typedName) => {
         if (!signingRental) return;
-        
-        try {
-            const res = await fetch(`/api/rentals/${signingRental.id}/sign`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ signature, role: 'TENANT' })
-            });
 
-            if (res.ok) {
-                alert('Agreement signed successfully!');
-                setSigningRental(null);
-                fetchRentals();
-            } else {
-                const data = await res.json();
-                alert(data.error || 'Failed to sign agreement');
-            }
-        } catch (err) {
-            alert('Something went wrong');
+        const res = await fetch(`/api/rentals/${signingRental.id}/sign`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ signature: typedName, role: 'TENANT' })
+        });
+
+        if (res.ok) {
+            // Refresh data after signing (modal stays open for download)
+            fetchRentals();
+        } else {
+            const data = await res.json();
+            throw new Error(data.error || 'Failed to sign agreement');
         }
     };
 
     const handleDispute = async (escrowId) => {
         const reason = window.prompt("Please detail the reason for the dispute. This will halt escrow release until an Admin reviews it.");
-
-        if (!reason) return; // User cancelled
+        if (!reason) return;
         if (reason.length < 10) {
             alert("Please provide a more detailed reason for the dispute (at least 10 characters).");
             return;
@@ -78,12 +72,9 @@ export default function TenantRentalsPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ reason })
             });
-
             const data = await res.json();
-
             if (res.ok) {
                 alert(data.message);
-                // Re-fetch to update status flags
                 const fetchRes = await fetch('/api/tenant/rentals');
                 const newData = await fetchRes.json();
                 if (fetchRes.ok) setRentals(newData);
@@ -96,9 +87,23 @@ export default function TenantRentalsPage() {
         }
     };
 
+    const handleDownloadContract = async (rental) => {
+        const tenantName = rental.tenant
+            ? `${rental.tenant.firstName} ${rental.tenant.lastName}`
+            : 'Tenant';
+        const landlordName = rental.property?.landlord
+            ? `${rental.property.landlord.firstName} ${rental.property.landlord.lastName}`
+            : 'Landlord';
+        const signedAt = rental.agreement?.tenantSignedAt || rental.updatedAt;
+        const typedName = rental.agreement?.tenantSignature || tenantName;
+
+        const { default: jsPDF } = await import('jspdf');
+        generateDownloadPDF({ rental, tenantName, landlordName, typedName, signedAt, jsPDF });
+    };
+
     return (
         <div className="fade-in">
-            <header className="mb-6">
+            <header style={{ marginBottom: 'var(--space-6)' }}>
                 <h1 style={{ fontSize: 'var(--text-2xl)' }}>My Rentals</h1>
                 <p className="text-muted">Track all your rental agreements and payment status.</p>
             </header>
@@ -117,15 +122,27 @@ export default function TenantRentalsPage() {
                         const status = statusConfig[rental.status] || statusConfig.PENDING;
                         const StatusIcon = status.icon;
                         const image = rental.property?.images?.[0]?.url;
+                        const tenantName = rental.tenant
+                            ? `${rental.tenant.firstName} ${rental.tenant.lastName}`
+                            : 'Tenant';
+                        const landlordName = rental.property?.landlord
+                            ? `${rental.property.landlord.firstName} ${rental.property.landlord.lastName}`
+                            : 'Landlord';
 
                         return (
                             <div key={rental.id} className="card">
-                                <div className="flex gap-4" style={{ flexWrap: 'wrap' }}>
+                                {/* Card main row — wraps on mobile */}
+                                <div style={{ display: 'flex', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
                                     {/* Property Image */}
                                     {image && (
                                         <div style={{
-                                            position: 'relative', width: '120px', height: '90px', borderRadius: 'var(--radius-md)',
-                                            overflow: 'hidden', flexShrink: 0, background: 'var(--bg-secondary)'
+                                            position: 'relative',
+                                            width: '120px',
+                                            height: '90px',
+                                            borderRadius: 'var(--radius-md)',
+                                            overflow: 'hidden',
+                                            flexShrink: 0,
+                                            background: 'var(--bg-secondary)',
                                         }}>
                                             <Image
                                                 src={image}
@@ -137,8 +154,9 @@ export default function TenantRentalsPage() {
                                         </div>
                                     )}
 
-                                    <div style={{ flex: 1, minWidth: '200px' }}>
-                                        <div className="flex items-center gap-2 mb-2">
+                                    {/* Content */}
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap', marginBottom: 'var(--space-2)' }}>
                                             <span className={`badge ${status.badge} flex items-center gap-1`}>
                                                 <StatusIcon size={12} /> {status.label}
                                             </span>
@@ -149,113 +167,149 @@ export default function TenantRentalsPage() {
                                             )}
                                         </div>
 
-                                        <h4 className="font-bold" style={{ fontSize: 'var(--text-base)', marginBottom: 'var(--space-1)' }}>
+                                        <h4 className="font-bold" style={{ fontSize: 'var(--text-base)', marginBottom: 'var(--space-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                             {rental.property?.title || `Rental #${rental.id}`}
                                         </h4>
 
-                                        <div className="flex gap-4 mt-1" style={{ flexWrap: 'wrap' }}>
+                                        <div style={{ display: 'flex', gap: 'var(--space-4)', flexWrap: 'wrap', marginTop: 'var(--space-1)' }}>
                                             <span className="text-xs text-muted flex items-center gap-1">
                                                 <MapPin size={12} /> {rental.property?.address}
                                             </span>
                                             <span className="text-xs text-muted flex items-center gap-1">
                                                 <Calendar size={12} />
-                                                {new Date(rental.startDate).toLocaleDateString('en-GB', { dateStyle: 'medium' })} —
+                                                {new Date(rental.startDate).toLocaleDateString('en-GB', { dateStyle: 'medium' })} —&nbsp;
                                                 {new Date(rental.endDate).toLocaleDateString('en-GB', { dateStyle: 'medium' })}
                                             </span>
                                         </div>
 
-                                        <div className="flex justify-between items-center mt-4 pt-4" style={{ borderTop: '1px solid var(--border-color)' }}>
+                                        {/* Bottom row */}
+                                        <div style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'flex-start',
+                                            flexWrap: 'wrap',
+                                            gap: 'var(--space-4)',
+                                            marginTop: 'var(--space-4)',
+                                            paddingTop: 'var(--space-4)',
+                                            borderTop: '1px solid var(--border-color)',
+                                        }}>
+                                            {/* Amount */}
                                             <div>
                                                 <span className="text-xs text-muted">Rent Paid</span>
                                                 <p className="font-bold" style={{ color: 'var(--color-primary)' }}>
                                                     ₦{Number(rental.totalPaid).toLocaleString()}
                                                 </p>
+                                                <span className="text-xs text-muted">Rental ID: <strong>#{rental.id}</strong></span>
                                             </div>
-                                            <div className="text-right flex items-center gap-4">
-                                                <div>
-                                                    <span className="text-xs text-muted">Rental ID</span>
-                                                    <p className="font-bold text-sm">#{rental.id}</p>
-                                                </div>
-                                                <div className="flex gap-2">
-                                                    <Link
-                                                        href={`/tenant/messages?startThreadWith=${rental.property?.landlordId}&rentalId=${rental.id}&title=${encodeURIComponent(rental.property?.title)}`}
-                                                        className="btn btn-sm btn-primary"
-                                                    >
-                                                        <MessageCircle size={14} style={{ marginRight: 4 }} />
-                                                        Chat Landlord
-                                                    </Link>
+
+                                            {/* Buttons — wrap on small screens */}
+                                            <div style={{
+                                                display: 'flex',
+                                                gap: 'var(--space-2)',
+                                                flexWrap: 'wrap',
+                                                justifyContent: 'flex-start',
+                                                width: '100%',
+                                                maxWidth: '100%',
+                                            }}>
+                                                {/* Chat Landlord */}
+                                                <Link
+                                                    href={`/tenant/messages?startThreadWith=${rental.property?.landlordId}&rentalId=${rental.id}&title=${encodeURIComponent(rental.property?.title || '')}`}
+                                                    className="btn btn-sm btn-primary"
+                                                >
+                                                    <MessageCircle size={14} style={{ marginRight: 4 }} />
+                                                    Chat Landlord
+                                                </Link>
+
+                                                {/* Sign Agreement / Signed + Download */}
+                                                {rental.agreement?.tenantSigned ? (
+                                                    <>
+                                                        <button
+                                                            className="btn btn-sm btn-ghost text-success"
+                                                            disabled
+                                                            style={{ cursor: 'default' }}
+                                                        >
+                                                            <CheckCircle size={14} style={{ marginRight: 4 }} /> Signed
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDownloadContract(rental)}
+                                                            className="btn btn-sm btn-outline"
+                                                        >
+                                                            <Download size={14} style={{ marginRight: 4 }} />
+                                                            Contract
+                                                        </button>
+                                                    </>
+                                                ) : (
                                                     <button
                                                         onClick={() => setSigningRental(rental)}
-                                                        className={`btn btn-sm ${rental.agreement?.tenantSigned ? 'btn-ghost text-success' : 'btn-primary'}`}
-                                                        disabled={rental.agreement?.tenantSigned}
+                                                        className="btn btn-sm btn-primary"
                                                     >
-                                                        {rental.agreement?.tenantSigned ? (
-                                                            <><CheckCircle size={14} style={{ marginRight: 4 }} /> Signed</>
-                                                        ) : (
-                                                            <><FileText size={14} style={{ marginRight: 4 }} /> Sign Agreement</>
-                                                        )}
+                                                        <FileText size={14} style={{ marginRight: 4 }} /> Sign Agreement
                                                     </button>
-                                                    <button
-                                                        onClick={async () => {
-                                                            const { generateRentalReceipt } = await import('@/lib/receiptGenerator');
-                                                            generateRentalReceipt({
-                                                                tenantName: `${rental.tenant.firstName} ${rental.tenant.lastName}`,
-                                                                landlordName: `${rental.property.landlord.firstName} ${rental.property.landlord.lastName}`,
-                                                                propertyTitle: rental.property.title,
-                                                                propertyAddress: rental.property.address,
-                                                                rentalId: rental.id,
-                                                                paymentRef: rental.paystackRef || 'N/A',
-                                                                amount: rental.rentAmount,
-                                                                serviceFee: rental.serviceFee,
-                                                                totalPaid: rental.totalPaid,
-                                                                date: rental.createdAt
-                                                            });
-                                                        }}
-                                                        className="btn btn-sm btn-outline"
-                                                    >
-                                                        <FileText size={14} style={{ marginRight: 4 }} />
-                                                        Receipt
-                                                    </button>
-                                                    {rental.escrow?.status === 'HELD' && (
-                                                        <>
-                                                            <button
-                                                                className="btn btn-sm"
-                                                                style={{ background: 'var(--color-success)', color: 'white' }}
-                                                                onClick={async () => {
-                                                                    if (confirm('Are you sure you want to confirm access and release the funds to the landlord? This cannot be undone.')) {
-                                                                        try {
-                                                                            const res = await fetch('/api/escrow/release', {
-                                                                                method: 'POST',
-                                                                                headers: { 'Content-Type': 'application/json' },
-                                                                                body: JSON.stringify({ rentalId: rental.id, action: 'confirm_access' })
-                                                                            });
-                                                                            const data = await res.json();
-                                                                            if (res.ok) {
-                                                                                alert(data.message);
-                                                                                window.location.reload();
-                                                                            } else {
-                                                                                alert(data.error);
-                                                                            }
-                                                                        } catch (e) {
-                                                                            alert('Failed to release funds');
+                                                )}
+
+                                                {/* Download Receipt */}
+                                                <button
+                                                    onClick={async () => {
+                                                        const { generateRentalReceipt } = await import('@/lib/receiptGenerator');
+                                                        generateRentalReceipt({
+                                                            tenantName,
+                                                            landlordName,
+                                                            propertyTitle: rental.property?.title || '',
+                                                            propertyAddress: rental.property?.address || '',
+                                                            rentalId: rental.id,
+                                                            paymentRef: rental.paystackRef || 'N/A',
+                                                            amount: rental.rentAmount,
+                                                            serviceFee: rental.serviceFee,
+                                                            totalPaid: rental.totalPaid,
+                                                            date: rental.createdAt
+                                                        });
+                                                    }}
+                                                    className="btn btn-sm btn-outline"
+                                                >
+                                                    <Download size={14} style={{ marginRight: 4 }} />
+                                                    Download Receipt
+                                                </button>
+
+                                                {/* Escrow actions */}
+                                                {rental.escrow?.status === 'HELD' && (
+                                                    <>
+                                                        <button
+                                                            className="btn btn-sm"
+                                                            style={{ background: 'var(--color-success)', color: 'white' }}
+                                                            onClick={async () => {
+                                                                if (confirm('Are you sure you want to confirm access and release the funds to the landlord? This cannot be undone.')) {
+                                                                    try {
+                                                                        const res = await fetch('/api/escrow/release', {
+                                                                            method: 'POST',
+                                                                            headers: { 'Content-Type': 'application/json' },
+                                                                            body: JSON.stringify({ rentalId: rental.id, action: 'confirm_access' })
+                                                                        });
+                                                                        const data = await res.json();
+                                                                        if (res.ok) {
+                                                                            alert(data.message);
+                                                                            window.location.reload();
+                                                                        } else {
+                                                                            alert(data.error);
                                                                         }
+                                                                    } catch (e) {
+                                                                        alert('Failed to release funds');
                                                                     }
-                                                                }}
-                                                            >
-                                                                <CheckCircle size={14} style={{ marginRight: 4 }} />
-                                                                Release Funds
-                                                            </button>
-                                                            <button
-                                                                className="btn btn-sm btn-outline"
-                                                                style={{ borderColor: 'var(--color-error)', color: 'var(--color-error)' }}
-                                                                onClick={() => handleDispute(rental.escrow.id)}
-                                                            >
-                                                                <AlertTriangle size={14} style={{ marginRight: 4 }} />
-                                                                Raise Dispute
-                                                            </button>
-                                                        </>
-                                                    )}
-                                                </div>
+                                                                }
+                                                            }}
+                                                        >
+                                                            <CheckCircle size={14} style={{ marginRight: 4 }} />
+                                                            Release Funds
+                                                        </button>
+                                                        <button
+                                                            className="btn btn-sm btn-outline"
+                                                            style={{ borderColor: 'var(--color-error)', color: 'var(--color-error)' }}
+                                                            onClick={() => handleDispute(rental.escrow.id)}
+                                                        >
+                                                            <AlertTriangle size={14} style={{ marginRight: 4 }} />
+                                                            Raise Dispute
+                                                        </button>
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -265,13 +319,182 @@ export default function TenantRentalsPage() {
                     })}
                 </div>
             )}
-            {signingRental && (
-                <SignaturePad 
-                    title={`Sign Agreement for ${signingRental.property?.title}`}
-                    onSave={handleSign}
-                    onCancel={() => setSigningRental(null)}
-                />
-            )}
+
+            {signingRental && (() => {
+                const tenantName = signingRental.tenant
+                    ? `${signingRental.tenant.firstName} ${signingRental.tenant.lastName}`
+                    : 'Tenant';
+                const landlordName = signingRental.property?.landlord
+                    ? `${signingRental.property.landlord.firstName} ${signingRental.property.landlord.lastName}`
+                    : 'Landlord';
+                return (
+                    <RentalAgreementModal
+                        rental={signingRental}
+                        tenantName={tenantName}
+                        landlordName={landlordName}
+                        onSave={handleSign}
+                        onCancel={() => { setSigningRental(null); fetchRentals(); }}
+                    />
+                );
+            })()}
         </div>
     );
+}
+
+// Standalone PDF download for already-signed contracts
+async function generateDownloadPDF({ rental, tenantName, landlordName, typedName, signedAt, jsPDF }) {
+    const doc = new jsPDF();
+    const primaryColor = '#FDA829';
+    const black = '#000000';
+    const pageWidth = 210;
+    const margin = 20;
+    const contentWidth = pageWidth - margin * 2;
+
+    const fmtDate = (d) => {
+        if (!d) return 'N/A';
+        return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    };
+    const fmtCurrency = (v) => '₦' + Number(v).toLocaleString('en-NG');
+
+    // Header
+    doc.setFillColor(0, 0, 0);
+    doc.rect(0, 0, pageWidth, 42, 'F');
+    doc.setTextColor(primaryColor);
+    doc.setFontSize(26);
+    doc.setFont('helvetica', 'bold');
+    doc.text('RENTA', margin, 20);
+    doc.setTextColor('#FFFFFF');
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text('VERIFIED APARTMENT RENTALS', margin, 28);
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('RESIDENTIAL TENANCY AGREEMENT', margin, 37);
+
+    let y = 56;
+    doc.setTextColor(black);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Rental Agreement #${rental.id}`, margin, y);
+    y += 7;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor('#7a7a7a');
+    doc.text(`Property: ${rental.property?.title || 'N/A'}`, margin, y);
+    y += 6;
+    doc.text(`Address: ${rental.property?.address || 'N/A'}`, margin, y);
+    y += 12;
+
+    doc.setDrawColor(220, 220, 220);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 8;
+
+    doc.setTextColor(black);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('1. PARTIES', margin, y);
+    y += 7;
+    doc.setFontSize(9);
+    for (const [label, val] of [['Tenant:', tenantName], ['Landlord:', landlordName], ['Property Address:', rental.property?.address || 'N/A']]) {
+        doc.setFont('helvetica', 'bold');
+        doc.text(label, margin, y);
+        doc.setFont('helvetica', 'normal');
+        doc.text(val, margin + 35, y);
+        y += 6;
+    }
+    y += 4;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.text('2. RENTAL PERIOD', margin, y);
+    y += 7;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text(`From ${fmtDate(rental.startDate)} to ${fmtDate(rental.endDate)}`, margin, y);
+    y += 10;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.text('3. RENT AND FEES', margin, y);
+    y += 7;
+    doc.setFontSize(9);
+    for (const [label, val] of [
+        ['Rent Amount:', fmtCurrency(rental.rentAmount)],
+        ['Platform Service Fee:', fmtCurrency(rental.serviceFee)],
+        ['Total Amount Paid:', fmtCurrency(rental.totalPaid)],
+    ]) {
+        doc.setFont('helvetica', 'bold');
+        doc.text(label, margin, y);
+        doc.setFont('helvetica', 'normal');
+        doc.text(val, margin + 50, y);
+        y += 6;
+    }
+    y += 4;
+
+    const clauses = [
+        ['4. ESCROW TERMS', 'All rental funds are held securely in escrow by Renta. Funds are released to the Landlord only after the Tenant confirms access. In disputes, funds remain held until resolved.'],
+        ['5. TENANT OBLIGATIONS', 'Maintain property condition, no subletting without consent, no unlawful use, report damages via Renta.'],
+        ['6. LANDLORD OBLIGATIONS', 'Ensure habitable condition, grant peaceful enjoyment, attend to maintenance requests via Renta.'],
+        ['7. TERMINATION', 'Either party may terminate with 30 days written notice via Renta. Early termination may result in penalties.'],
+        ['8. DISPUTE RESOLUTION', 'Disputes submitted via Renta platform first. If unresolved in 14 days, may proceed to mediation or court.'],
+        ['9. ELECTRONIC SIGNATURE', 'Electronic signature is legally binding per Nigerian law.'],
+        ['10. GOVERNING LAW', 'Governed by the laws of the Federal Republic of Nigeria.'],
+    ];
+
+    for (const [heading, body] of clauses) {
+        if (y > 250) { doc.addPage(); y = 20; }
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(black);
+        doc.text(heading, margin, y);
+        y += 6;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor('#4a4a4a');
+        const lines = doc.splitTextToSize(body, contentWidth);
+        doc.text(lines, margin, y);
+        y += lines.length * 5 + 6;
+    }
+
+    if (y > 230) { doc.addPage(); y = 20; }
+    y += 6;
+    doc.setDrawColor(220, 220, 220);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 10;
+
+    doc.setTextColor(black);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('TENANT SIGNATURE', margin, y);
+    y += 8;
+
+    doc.setFillColor(250, 250, 250);
+    doc.setDrawColor(200, 200, 200);
+    doc.roundedRect(margin, y, contentWidth, 18, 3, 3, 'FD');
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(14);
+    doc.setTextColor('#2a2a2a');
+    doc.text(typedName, margin + 6, y + 12);
+    y += 24;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor('#7a7a7a');
+    doc.text(`Signed electronically on: ${fmtDate(signedAt)}`, margin, y);
+    y += 6;
+    doc.text(`Tenant Name: ${typedName}`, margin, y);
+    y += 6;
+    doc.text(`Rental Reference: #${rental.id}`, margin, y);
+
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setTextColor(180, 180, 180);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'italic');
+        doc.text('This is an electronically generated document facilitated by Renta.', margin, 287, { maxWidth: contentWidth });
+        doc.text(`Page ${i} of ${pageCount}`, pageWidth - margin, 287, { align: 'right' });
+    }
+
+    doc.save(`Renta_Agreement_${rental.id}.pdf`);
 }
