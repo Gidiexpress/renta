@@ -52,7 +52,7 @@ export async function GET(request, { params }) {
         };
         const fmtAmount = (v) => 'NGN ' + Number(v).toLocaleString('en-NG', { minimumFractionDigits: 2 });
 
-        const doc = new PDFDocument({ margin: 50, size: 'A4' });
+        const doc = new PDFDocument({ margin: 50, size: 'A4', bufferPages: true });
         const chunks = [];
         doc.on('data', (chunk) => chunks.push(chunk));
 
