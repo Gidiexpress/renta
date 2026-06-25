@@ -139,6 +139,13 @@ export async function verifyPayment(orderReference) {
  */
 export async function validateWebhookSignature(rawBody, headers) {
     try {
+        // Chicken-and-egg fix: If the secret isn't configured yet, allow the request.
+        // Nomba sends a test ping when adding the URL and expects a 200 OK. It won't give us the secret until the URL is saved.
+        const secret = await getSetting('NOMBA_WEBHOOK_SECRET');
+        if (!secret) {
+            return true;
+        }
+
         // Support both Next.js Headers objects (with .get()) and plain objects
         const getHeader = (name) =>
             typeof headers.get === 'function' ? headers.get(name) : headers[name];
@@ -184,14 +191,6 @@ export async function validateWebhookSignature(rawBody, headers) {
             transactionResponseCode,
             timestamp,
         ].join(':');
-
-        const secret = await getSetting('NOMBA_WEBHOOK_SECRET');
-
-        // Chicken-and-egg fix: If the secret isn't configured yet, allow the request.
-        // Nomba sends a test ping when adding the URL and expects a 200 OK. It won't give us the secret until the URL is saved.
-        if (!secret) {
-            return true;
-        }
 
         const computed = crypto
             .createHmac('sha256', secret)
