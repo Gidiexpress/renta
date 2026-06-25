@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { DollarSign, Wallet, ArrowUpRight, TrendingUp, Calendar, Search, Download, Filter } from 'lucide-react';
-import styles from '../../tenant/dashboard.module.css'; // Reusing dashboard styles
+import { DollarSign, Wallet, ArrowUpRight, TrendingUp, Search, Download, Loader2 } from 'lucide-react';
+import styles from '../../tenant/dashboard.module.css';
 
 export default function AdminFinancePage() {
     const [stats, setStats] = useState({
@@ -18,14 +18,12 @@ export default function AdminFinancePage() {
     useEffect(() => {
         const fetchFinanceData = async () => {
             try {
-                // In a real app, this would be a dedicated API route
-                // For now, we'll fetch payments and calculate stats
-                const res = await fetch('/api/admin/payments'); // We'll need to create this or use existing if any
+                const res = await fetch('/api/admin/payments');
                 if (res.ok) {
                     const data = await res.json();
                     setPayments(data.payments || []);
                     setStats(data.stats || {
-                        totalRevenue: data.payments?.filter(p => p.status === 'SUCCESS').reduce((acc, p) => acc + p.amount, 0) || 0,
+                        totalRevenue: data.payments?.filter(p => p.status === 'SUCCESS').reduce((acc, p) => acc + Number(p.amount), 0) || 0,
                         totalPromotions: data.payments?.filter(p => p.type === 'PROMOTION' && p.status === 'SUCCESS').length || 0,
                         activeRentals: data.payments?.filter(p => p.type === 'RENT' && p.status === 'SUCCESS').length || 0,
                         pendingPayouts: 0
@@ -41,9 +39,48 @@ export default function AdminFinancePage() {
     }, []);
 
     const filteredPayments = payments.filter(p =>
-        p.paymentRef?.toLowerCase().includes(search.toLowerCase()) ||
-        p.user?.email?.toLowerCase().includes(search.toLowerCase())
+        p.paystackRef?.toLowerCase().includes(search.toLowerCase()) ||
+        p.rental?.tenant?.email?.toLowerCase().includes(search.toLowerCase())
     );
+
+    const statCards = [
+        {
+            title: 'Total Revenue',
+            value: `₦${Number(stats.totalRevenue).toLocaleString()}`,
+            icon: DollarSign,
+            trend: '+12% from last month',
+            trendColor: 'var(--color-success)',
+            iconBg: 'var(--color-primary-light)',
+            iconColor: 'var(--color-primary-dark)',
+        },
+        {
+            title: 'Promotion Earnings',
+            value: `₦${(stats.totalPromotions * 5000).toLocaleString()}`,
+            icon: TrendingUp,
+            trend: `${stats.totalPromotions} promoted listings`,
+            trendColor: 'var(--text-muted)',
+            iconBg: 'var(--color-info-light)',
+            iconColor: 'var(--color-info)',
+        },
+        {
+            title: 'Success Rate',
+            value: '94.2%',
+            icon: ArrowUpRight,
+            trend: 'Payment conversion',
+            trendColor: 'var(--text-muted)',
+            iconBg: 'var(--color-success-light)',
+            iconColor: 'var(--color-success)',
+        },
+        {
+            title: 'Platform Commission',
+            value: `₦${(Number(stats.totalRevenue) * 0.1).toLocaleString()}`,
+            icon: Wallet,
+            trend: '10% of total revenue',
+            trendColor: 'var(--text-muted)',
+            iconBg: 'var(--color-warning-light)',
+            iconColor: 'var(--color-warning)',
+        },
+    ];
 
     return (
         <div className="fade-in">
@@ -52,134 +89,105 @@ export default function AdminFinancePage() {
                 <p className="text-muted">Track platform revenue, promotions, and user payments</p>
             </div>
 
-            {/* Stats Overview */}
+            {/* Stats Grid */}
             <div className={styles.statsGrid}>
-                <div className={`card ${styles.statCard}`}>
-                    <div className={styles.statHeader}>
-                        <div className={styles.statTitle}>Total Revenue</div>
-                        <div className={`${styles.statIcon} bg-primary-light text-primary`}>
-                            <DollarSign size={20} />
+                {statCards.map((card) => (
+                    <div key={card.title} className={`card ${styles.statCard}`}>
+                        <div className={styles.statHeader}>
+                            <span className={styles.statTitle}>{card.title}</span>
+                            <span className={styles.statIcon} style={{ background: card.iconBg, color: card.iconColor }}>
+                                <card.icon size={18} />
+                            </span>
+                        </div>
+                        <div className={styles.statValue}>{card.value}</div>
+                        <div className={styles.statTrend} style={{ color: card.trendColor }}>
+                            <TrendingUp size={12} />
+                            <span>{card.trend}</span>
                         </div>
                     </div>
-                    <div className={styles.statValue}>₦{stats.totalRevenue.toLocaleString()}</div>
-                    <div className={styles.statTrend}>
-                        <TrendingUp size={14} className="text-success" />
-                        <span className="text-success">+12% from last month</span>
-                    </div>
-                </div>
-
-                <div className={`card ${styles.statCard}`}>
-                    <div className={styles.statHeader}>
-                        <div className={styles.statTitle}>Promotion Earnings</div>
-                        <div className={`${styles.statIcon} bg-info-light text-info`}>
-                            <TrendingUp size={20} />
-                        </div>
-                    </div>
-                    <div className={styles.statValue}>₦{(stats.totalPromotions * 5000).toLocaleString()}</div>
-                    <div className={styles.statTrend}>
-                        <span className="text-muted">{stats.totalPromotions} promoted listings</span>
-                    </div>
-                </div>
-
-                <div className={`card ${styles.statCard}`}>
-                    <div className={styles.statHeader}>
-                        <div className={styles.statTitle}>Success Rate</div>
-                        <div className={`${styles.statIcon} bg-success-light text-success`}>
-                            <ArrowUpRight size={20} />
-                        </div>
-                    </div>
-                    <div className={styles.statValue}>94.2%</div>
-                    <div className={styles.statTrend}>
-                        <span className="text-muted">Payment conversion</span>
-                    </div>
-                </div>
-
-                <div className={`card ${styles.statCard}`}>
-                    <div className={styles.statHeader}>
-                        <div className={styles.statTitle}>Internal Revenue</div>
-                        <div className={`${styles.statIcon} bg-warning-light text-warning`}>
-                            <Wallet size={20} />
-                        </div>
-                    </div>
-                    <div className={styles.statValue}>₦{(stats.totalRevenue * 0.1).toLocaleString()}</div>
-                    <div className={styles.statTrend}>
-                        <span className="text-muted">10% Platform commission</span>
-                    </div>
-                </div>
+                ))}
             </div>
 
             {/* Transactions Table */}
-            <div className="card mt-8">
-                <div className="flex justify-between items-center mb-6">
-                    <h3 className="font-bold text-lg">Transaction History</h3>
-                    <div className="flex gap-4">
-                        <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={18} />
+            <div className="card" style={{ marginTop: 'var(--space-8)' }}>
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: 'var(--space-6)',
+                    flexWrap: 'wrap',
+                    gap: 'var(--space-3)',
+                }}>
+                    <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-bold)', margin: 0 }}>
+                        Transaction History
+                    </h3>
+                    <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap', alignItems: 'center' }}>
+                        <div style={{ position: 'relative' }}>
+                            <Search size={16} style={{
+                                position: 'absolute', left: 12, top: '50%',
+                                transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none'
+                            }} />
                             <input
                                 type="text"
                                 placeholder="Search reference or email..."
-                                className="form-input pl-10 w-64"
+                                className="form-input"
+                                style={{ paddingLeft: 36, width: '240px', maxWidth: '100%' }}
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                             />
                         </div>
-                        <button className="btn btn-outline flex items-center gap-2">
-                            <Download size={18} /> Export
+                        <button className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <Download size={16} /> Export
                         </button>
                     </div>
                 </div>
 
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
+                <div className={styles.tableContainer}>
+                    <table className={styles.dataTable}>
                         <thead>
-                            <tr className="border-b text-muted text-sm">
-                                <th className="pb-4 font-semibold">Reference</th>
-                                <th className="pb-4 font-semibold">User</th>
-                                <th className="pb-4 font-semibold">Amount</th>
-                                <th className="pb-4 font-semibold">Type</th>
-                                <th className="pb-4 font-semibold">Date</th>
-                                <th className="pb-4 font-semibold">Status</th>
+                            <tr>
+                                <th>Reference</th>
+                                <th>Tenant</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading ? (
-                                Array(5).fill(0).map((_, i) => (
-                                    <tr key={i} className="border-b animate-pulse">
-                                        <td className="py-4"><div className="h-4 bg-gray-100 rounded w-24"></div></td>
-                                        <td className="py-4"><div className="h-4 bg-gray-100 rounded w-32"></div></td>
-                                        <td className="py-4"><div className="h-4 bg-gray-100 rounded w-16"></div></td>
-                                        <td className="py-4"><div className="h-4 bg-gray-200 rounded w-20"></div></td>
-                                        <td className="py-4"><div className="h-4 bg-gray-100 rounded w-24"></div></td>
-                                        <td className="py-4"><div className="h-4 bg-gray-100 rounded w-16"></div></td>
-                                    </tr>
-                                ))
+                                <tr>
+                                    <td colSpan="5" style={{ textAlign: 'center', padding: 'var(--space-8)' }}>
+                                        <Loader2 size={24} style={{ animation: 'spin 1s linear infinite', color: 'var(--color-primary)', margin: '0 auto' }} />
+                                    </td>
+                                </tr>
                             ) : filteredPayments.length === 0 ? (
                                 <tr>
-                                    <td colSpan="6" className="py-12 text-center text-muted">
+                                    <td colSpan="5" style={{ textAlign: 'center', padding: 'var(--space-12)', color: 'var(--text-muted)' }}>
                                         No transactions found.
                                     </td>
                                 </tr>
                             ) : (
                                 filteredPayments.map((payment) => (
-                                    <tr key={payment.id} className="border-b hover:bg-gray-50 transition-colors">
-                                        <td className="py-4 font-mono text-xs">{payment.paymentRef}</td>
-                                        <td className="py-4">
-                                            <div className="flex flex-col">
-                                                <span className="font-medium">{payment.user?.firstName} {payment.user?.lastName}</span>
-                                                <span className="text-xs text-muted">{payment.user?.email}</span>
-                                            </div>
+                                    <tr key={payment.id}>
+                                        <td style={{ fontFamily: 'monospace', fontSize: 'var(--text-xs)' }}>
+                                            {payment.paystackRef || payment.nombaRef || 'N/A'}
                                         </td>
-                                        <td className="py-4 font-bold text-primary">₦{payment.amount.toLocaleString()}</td>
-                                        <td className="py-4">
-                                            <span className={`badge ${payment.type === 'PROMOTION' ? 'badge-info' : 'badge-primary'}`}>
-                                                {payment.type}
+                                        <td>
+                                            <span style={{ fontWeight: 'var(--font-medium)', display: 'block' }}>
+                                                {payment.rental?.tenant?.firstName} {payment.rental?.tenant?.lastName}
+                                            </span>
+                                            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+                                                {payment.rental?.tenant?.email}
                                             </span>
                                         </td>
-                                        <td className="py-4 text-sm text-muted">
-                                            {payment.paidAt ? new Date(payment.paidAt).toLocaleDateString() : 'N/A'}
+                                        <td style={{ fontWeight: 'var(--font-bold)', color: 'var(--color-primary)' }}>
+                                            ₦{Number(payment.amount).toLocaleString()}
                                         </td>
-                                        <td className="py-4">
-                                            <span className={`badge ${payment.status === 'SUCCESS' ? 'badge-success' : 'badge-warning'}`}>
+                                        <td style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>
+                                            {payment.paidAt ? new Date(payment.paidAt).toLocaleDateString('en-GB') : '—'}
+                                        </td>
+                                        <td>
+                                            <span className={`badge ${payment.status === 'SUCCESS' ? 'badge-verified' : payment.status === 'FAILED' ? 'badge-error' : 'badge-pending'}`}>
                                                 {payment.status}
                                             </span>
                                         </td>
@@ -190,14 +198,6 @@ export default function AdminFinancePage() {
                     </table>
                 </div>
             </div>
-
-            <style jsx>{`
-                .bg-primary-light { background-color: rgba(var(--color-primary-rgb), 0.1); }
-                .bg-info-light { background-color: rgba(var(--color-info-rgb), 0.1); }
-                .bg-success-light { background-color: #ecfdf5; }
-                .bg-warning-light { background-color: #fffbeb; }
-                .badge-info { background: #e0f2fe; color: #0369a1; }
-            `}</style>
         </div>
     );
 }
