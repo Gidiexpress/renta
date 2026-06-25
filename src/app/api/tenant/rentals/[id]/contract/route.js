@@ -86,19 +86,26 @@ export async function GET(request, { params }) {
             const section = (title, body) => {
                 if (y > 700) { doc.addPage(); y = 50; }
                 doc.fillColor('#000000').fontSize(10).font('Helvetica-Bold').text(title, margin, y);
-                y += 14;
+                y += 16;
                 if (Array.isArray(body)) {
-                    // Key-value pairs
+                    const labelW = 155;
+                    const valueX = margin + labelW;
+                    const valueW = contentW - labelW;
                     for (const [label, value] of body) {
-                        doc.font('Helvetica-Bold').fontSize(9).fillColor('#555555').text(label, margin, y, { continued: true, width: 130 });
-                        doc.font('Helvetica').fillColor('#000000').text(value, { width: contentW - 130 });
-                        y += 14;
+                        const rowY = y;
+                        // Label column — fixed width, no line break beyond its column
+                        doc.font('Helvetica-Bold').fontSize(9).fillColor('#555555')
+                            .text(label, margin, rowY, { width: labelW, lineBreak: false });
+                        // Value column — starts at same row Y, can wrap within its own width
+                        doc.font('Helvetica').fontSize(9).fillColor('#000000')
+                            .text(String(value ?? 'N/A'), valueX, rowY, { width: valueW });
+                        // Advance y by however far the value column pushed doc.y, plus padding
+                        y = Math.max(doc.y, rowY + 13) + 4;
                     }
                 } else {
                     doc.font('Helvetica').fontSize(9).fillColor('#444444');
-                    const lines = doc.heightOfString(body, { width: contentW });
                     doc.text(body, margin, y, { width: contentW });
-                    y += lines + 8;
+                    y = doc.y + 8;
                 }
                 y += 8;
             };
