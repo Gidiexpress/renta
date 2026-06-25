@@ -119,31 +119,23 @@ export default function TenantRentalsPage() {
 
                         return (
                             <div key={rental.id} className="card">
-                                {/* Card main row — wraps on mobile */}
-                                <div style={{ display: 'flex', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
+                                {/* Card main row — stacks on mobile, side-by-side on desktop */}
+                                <div className="rental-card-row">
                                     {/* Property Image */}
                                     {image && (
-                                        <div style={{
-                                            position: 'relative',
-                                            width: '120px',
-                                            height: '90px',
-                                            borderRadius: 'var(--radius-md)',
-                                            overflow: 'hidden',
-                                            flexShrink: 0,
-                                            background: 'var(--bg-secondary)',
-                                        }}>
+                                        <div className="rental-card-image">
                                             <Image
                                                 src={image}
                                                 alt={rental.property?.title || 'Property Image'}
                                                 fill
                                                 style={{ objectFit: 'cover' }}
-                                                sizes="120px"
+                                                sizes="(max-width: 640px) 100vw, 140px"
                                             />
                                         </div>
                                     )}
 
                                     {/* Content */}
-                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div className="rental-card-content">
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap', marginBottom: 'var(--space-2)' }}>
                                             <span className={`badge ${status.badge} flex items-center gap-1`}>
                                                 <StatusIcon size={12} /> {status.label}
