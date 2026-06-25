@@ -11,9 +11,14 @@ export default function GoogleMapsLoader({ apiKey }) {
     }
 
     return (
-        <Script
-            src={`https://maps.googleapis.com/maps/api/js?key=${finalApiKey}&libraries=places&callback=initAutocomplete`}
-            strategy="afterInteractive"
-        />
+        <>
+            <Script id="google-maps-callback" strategy="beforeInteractive">
+                {`window.__googleMapsCallback = function() {};`}
+            </Script>
+            <Script
+                src={`https://maps.googleapis.com/maps/api/js?key=${finalApiKey}&libraries=places&loading=async&callback=__googleMapsCallback`}
+                strategy="afterInteractive"
+            />
+        </>
     );
 }
