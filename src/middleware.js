@@ -27,7 +27,7 @@ export default NextAuth(authConfig).auth((req) => {
     }
 
     // Public routes that don't need auth
-    const publicRoutes = ['/', '/login', '/register', '/listings', '/about', '/contact', '/terms', '/privacy'];
+    const publicRoutes = ['/', '/login', '/register', '/listings', '/about', '/contact', '/terms', '/privacy', '/scout-program', '/affiliate-program'];
     const isPublicRoute = publicRoutes.some(route => pathname === route) || pathname.startsWith('/listing/');
 
     // Explicit allowlist for public API routes

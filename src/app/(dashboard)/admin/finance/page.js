@@ -54,10 +54,10 @@ export default function AdminFinancePage() {
             iconColor: 'var(--color-primary-dark)',
         },
         {
-            title: 'Promotion Earnings',
-            value: `₦${(stats.totalPromotions * 5000).toLocaleString()}`,
+            title: 'Pending Payouts',
+            value: `₦${Number(stats.pendingPayouts || 0).toLocaleString()}`,
             icon: TrendingUp,
-            trend: `${stats.totalPromotions} promoted listings`,
+            trend: 'Awaiting admin approval',
             trendColor: 'var(--text-muted)',
             iconBg: 'var(--color-info-light)',
             iconColor: 'var(--color-info)',

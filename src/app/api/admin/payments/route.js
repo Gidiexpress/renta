@@ -11,11 +11,15 @@ export async function GET(request) {
 
         const payments = await prisma.payment.findMany({
             include: {
-                user: {
-                    select: {
-                        firstName: true,
-                        lastName: true,
-                        email: true
+                rental: {
+                    include: {
+                        tenant: {
+                            select: {
+                                firstName: true,
+                                lastName: true,
+                                email: true
+                            }
+                        }
                     }
                 }
             },
@@ -24,12 +28,18 @@ export async function GET(request) {
             }
         });
 
+        // Calculate pending payouts
+        const pendingWithdrawals = await prisma.withdrawalRequest.aggregate({
+            _sum: { amount: true },
+            where: { status: 'PENDING' }
+        });
+
         // Calculate basic stats for the dashboard
         const stats = {
-            totalRevenue: payments.filter(p => p.status === 'SUCCESS').reduce((acc, p) => acc + p.amount, 0),
-            totalPromotions: payments.filter(p => p.type === 'PROMOTION' && p.status === 'SUCCESS').length,
-            activeRentals: payments.filter(p => p.type === 'RENT' && p.status === 'SUCCESS').length,
-            pendingPayouts: 0 // Placeholder
+            totalRevenue: payments.filter(p => p.status === 'SUCCESS').reduce((acc, p) => acc + Number(p.amount), 0),
+            totalPromotions: 0, // Promotions feature not yet implemented
+            activeRentals: payments.filter(p => p.status === 'SUCCESS').length,
+            pendingPayouts: Number(pendingWithdrawals._sum.amount || 0)
         };
 
         return NextResponse.json({ payments, stats });
