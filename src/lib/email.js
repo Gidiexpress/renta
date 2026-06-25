@@ -6,7 +6,7 @@ import { getSetting } from './settings';
 export async function sendEmail({ to, subject, html }) {
   const appName = await getSetting('NEXT_PUBLIC_APP_NAME', 'Renta');
   const apiKey = await getSetting('SMTP_PASS');
-  const fromAddress = await getSetting('EMAIL_FROM', 'noreply@renta-app.com');
+  const fromAddress = await getSetting('EMAIL_FROM', 'noreply@userenta.com');
 
   try {
     if (!apiKey) {

@@ -22,6 +22,7 @@ export const metadata = {
   title: 'Renta — Verified Apartment Rentals in Ilorin',
   description: 'Renta is a verified apartment rental marketplace in Ilorin, Nigeria. Rent verified apartments at landlord-approved prices with transparent 10% service fee and escrow-backed payments.',
   keywords: 'rent apartment Ilorin, student housing Ilorin, verified apartments Nigeria, Tanke apartments, Basin apartments, Malete apartments',
+  metadataBase: new URL('https://userenta.com'),
   icons: {
     icon: '/favicon.png',
     shortcut: '/favicon.png',

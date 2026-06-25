@@ -37,7 +37,7 @@ export async function POST(request) {
                 role: "system",
                 content: `You are Renta AI, the official support assistant for the Renta platform. 
                 Use the following Knowledge Base to answer user questions precisely. 
-                If you don't know the answer, ask them to contact hello@renta.ng.
+                If you don't know the answer, ask them to contact hello@userenta.com.
                 Be helpful, professional, and concise. Use Naira (₦) for currency.
                 
                 CONFIDENTIALITY & SCOPE RULES:

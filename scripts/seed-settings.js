@@ -15,7 +15,7 @@ async function seedSettings() {
 
         // Platform Info
         { key: 'maintenance_contact', value: '+234 800 123 4567', type: 'string', label: 'Maintenance Contact', group: 'platform', description: 'Phone number tenants and landlords can use for emergency maintenance support.' },
-        { key: 'support_email', value: 'support@renta.com', type: 'string', label: 'Support Email', group: 'platform', description: 'Email address for customer support inquiries.' },
+        { key: 'support_email', value: 'support@userenta.com', type: 'string', label: 'Support Email', group: 'platform', description: 'Email address for customer support inquiries.' },
         { key: 'max_property_images', value: '10', type: 'number', label: 'Max Property Images', group: 'platform', description: 'Maximum number of images a landlord can upload per property listing.' },
 
         // Payment Gateway
