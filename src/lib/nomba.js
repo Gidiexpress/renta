@@ -42,6 +42,7 @@ export async function getToken() {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${accountId}`,
       "X-Nomba-Account-Id": accountId,
     },
     body: JSON.stringify({
@@ -55,7 +56,10 @@ export async function getToken() {
 
   if (!res.ok || (data.code !== "00" && data.responseCode !== "00")) {
     throw new Error(
-      data.description || data.message || "Failed to obtain Nomba access token",
+      data.description ||
+        data.message ||
+        data.error?.message ||
+        "Failed to obtain Nomba access token",
     );
   }
 

@@ -67,40 +67,6 @@ export async function POST(request) {
     const reference = generateReference();
     const gateway = await getActiveGateway();
 
-    // Create pending rental
-    const rental = await prisma.rental.create({
-      data: {
-        tenantId: parseInt(session.user.id),
-        propertyId: property.id,
-        rentAmount: property.rentPrice,
-        serviceFee: breakdown.serviceFee,
-        totalPaid: totalAmount,
-        startDate: new Date(),
-        endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
-        status: "PENDING",
-      },
-    });
-
-    // Create escrow record (PENDING until payment is confirmed by Paystack)
-    const escrow = await prisma.escrow.create({
-      data: {
-        rentalId: rental.id,
-        amount: totalAmount,
-        status: "PENDING",
-      },
-    });
-
-    // Create payment record (schema fields: rentalId, amount, paystackRef, nombaRef, status)
-    await prisma.payment.create({
-      data: {
-        rentalId: rental.id,
-        amount: totalAmount,
-        paystackRef: gateway === "paystack" ? reference : null,
-        nombaRef: gateway === "nomba" ? reference : null,
-        status: "PENDING",
-      },
-    });
-
     const tenant = await prisma.user.findUnique({
       where: { id: parseInt(session.user.id) },
     });
@@ -109,30 +75,73 @@ export async function POST(request) {
       process.env.APP_URL ||
       request.nextUrl.origin;
 
-    const paymentInit = await initializePayment({
-      email: tenant.email,
-      amount: totalAmount,
-      reference,
-      callbackUrl: `${appUrl}/tenant/payments/verify?reference=${reference}`,
-      metadata: {
-        rentalId: rental.id,
-        propertyId: property.id,
-        tenantId: session.user.id,
-        escrowId: escrow.id,
-        custom_fields: [
-          {
-            display_name: "Property",
-            variable_name: "property",
-            value: property.title,
-          },
-          {
-            display_name: "Landlord",
-            variable_name: "landlord",
-            value: `${property.landlord.firstName} ${property.landlord.lastName}`,
-          },
-        ],
-      },
-    });
+    let rental;
+    let paymentInit;
+
+    try {
+      rental = await prisma.rental.create({
+        data: {
+          tenantId: parseInt(session.user.id),
+          propertyId: property.id,
+          rentAmount: property.rentPrice,
+          serviceFee: breakdown.serviceFee,
+          totalPaid: totalAmount,
+          startDate: new Date(),
+          endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+          status: "PENDING",
+        },
+      });
+
+      const escrow = await prisma.escrow.create({
+        data: {
+          rentalId: rental.id,
+          amount: totalAmount,
+          status: "PENDING",
+        },
+      });
+
+      await prisma.payment.create({
+        data: {
+          rentalId: rental.id,
+          amount: totalAmount,
+          paystackRef: gateway === "paystack" ? reference : null,
+          nombaRef: gateway === "nomba" ? reference : null,
+          status: "PENDING",
+        },
+      });
+
+      paymentInit = await initializePayment({
+        email: tenant.email,
+        amount: totalAmount,
+        reference,
+        callbackUrl: `${appUrl}/tenant/payments/verify?reference=${reference}`,
+        metadata: {
+          rentalId: rental.id,
+          propertyId: property.id,
+          tenantId: session.user.id,
+          escrowId: escrow.id,
+          custom_fields: [
+            {
+              display_name: "Property",
+              variable_name: "property",
+              value: property.title,
+            },
+            {
+              display_name: "Landlord",
+              variable_name: "landlord",
+              value: `${property.landlord.firstName} ${property.landlord.lastName}`,
+            },
+          ],
+        },
+      });
+    } catch (paymentError) {
+      if (rental?.id) {
+        await prisma.rental
+          .delete({ where: { id: rental.id } })
+          .catch(() => null);
+      }
+      throw paymentError;
+    }
 
     const paymentUrl =
       paymentInit.paymentUrl ||
