@@ -11,26 +11,18 @@ export default function LandingHeader() {
   const closeMenu = () => setIsMenuOpen(false);
 
   useEffect(() => {
-    const originalBodyOverflow = document.body.style.overflow;
-    const originalHtmlOverflow = document.documentElement.style.overflow;
-    const originalTouchAction = document.body.style.touchAction;
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        setIsMenuOpen(false);
+      }
+    };
 
-    if (isMenuOpen) {
-      document.body.style.overflow = "hidden";
-      document.documentElement.style.overflow = "hidden";
-      document.body.style.touchAction = "none";
-    } else {
-      document.body.style.overflow = "";
-      document.documentElement.style.overflow = "";
-      document.body.style.touchAction = "";
-    }
+    window.addEventListener("resize", handleResize);
 
     return () => {
-      document.body.style.overflow = originalBodyOverflow;
-      document.documentElement.style.overflow = originalHtmlOverflow;
-      document.body.style.touchAction = originalTouchAction;
+      window.removeEventListener("resize", handleResize);
     };
-  }, [isMenuOpen]);
+  }, []);
 
   return (
     <nav className={styles.nav}>

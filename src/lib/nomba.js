@@ -6,7 +6,16 @@
 import crypto from "crypto";
 import { getSetting } from "./settings";
 
-const NOMBA_BASE = "https://api.nomba.com/v1";
+const DEFAULT_NOMBA_BASE = "https://api.nomba.com";
+
+async function getNombaBaseUrl() {
+  const configuredBaseUrl = await getSetting("NOMBA_BASE_URL");
+  const normalizedBaseUrl = (configuredBaseUrl || DEFAULT_NOMBA_BASE).replace(
+    /\/+$/,
+    "",
+  );
+  return `${normalizedBaseUrl}/v1`;
+}
 
 /**
  * Module-level token cache to avoid redundant OAuth requests
@@ -27,7 +36,9 @@ export async function getToken() {
   const clientSecret = await getSetting("NOMBA_CLIENT_SECRET");
   const accountId = await getSetting("NOMBA_ACCOUNT_ID");
 
-  const res = await fetch(`${NOMBA_BASE}/auth/token/issue`, {
+  const nombaBase = await getNombaBaseUrl();
+
+  const res = await fetch(`${nombaBase}/auth/token/issue`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -83,7 +94,9 @@ export async function initializePayment({
   const token = await getToken();
   const accountId = await getSetting("NOMBA_ACCOUNT_ID");
 
-  const res = await fetch(`${NOMBA_BASE}/checkout/order`, {
+  const nombaBase = await getNombaBaseUrl();
+
+  const res = await fetch(`${nombaBase}/checkout/order`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -124,7 +137,8 @@ export async function verifyPayment(orderReference) {
   const token = await getToken();
   const accountId = await getSetting("NOMBA_ACCOUNT_ID");
 
-  const url = `${NOMBA_BASE}/transactions/accounts/single?orderReference=${encodeURIComponent(orderReference)}`;
+  const nombaBase = await getNombaBaseUrl();
+  const url = `${nombaBase}/transactions/accounts/single?orderReference=${encodeURIComponent(orderReference)}`;
 
   const res = await fetch(url, {
     headers: {
@@ -235,7 +249,9 @@ export async function getBanks() {
   const token = await getToken();
   const accountId = await getSetting("NOMBA_ACCOUNT_ID");
 
-  const res = await fetch(`${NOMBA_BASE}/transfers/banks`, {
+  const nombaBase = await getNombaBaseUrl();
+
+  const res = await fetch(`${nombaBase}/transfers/banks`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -264,7 +280,9 @@ export async function resolveAccount(accountNumber, bankCode) {
   const token = await getToken();
   const accountId = await getSetting("NOMBA_ACCOUNT_ID");
 
-  const res = await fetch(`${NOMBA_BASE}/transfers/bank/lookup`, {
+  const nombaBase = await getNombaBaseUrl();
+
+  const res = await fetch(`${nombaBase}/transfers/bank/lookup`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
