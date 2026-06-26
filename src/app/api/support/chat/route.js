@@ -24,6 +24,23 @@ Renta is a verified-only apartment marketplace in Nigeria (starting in Ilorin).
 - Where is Renta available? Currently Ilorin (Tanke, Basin, Malete).
 `;
 
+export function GET() {
+  return NextResponse.json({
+    status: "ok",
+    service: "support-chat",
+    methods: ["POST", "OPTIONS"],
+  });
+}
+
+export function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      Allow: "POST, OPTIONS",
+    },
+  });
+}
+
 export async function POST(request) {
   const GROQ_API_KEY =
     (await getSetting("GROQ_API_KEY")) || process.env.GROQ_API_KEY;

@@ -72,7 +72,10 @@ export default function SupportWidget() {
         body: JSON.stringify({ message: messageText, history: messages }),
       });
 
-      const data = await response.json();
+      const contentType = response.headers.get("content-type") || "";
+      const data = contentType.includes("application/json")
+        ? await response.json()
+        : { error: await response.text() };
 
       if (response.ok) {
         setMessages((prev) => [
