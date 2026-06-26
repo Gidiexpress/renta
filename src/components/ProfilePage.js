@@ -425,48 +425,47 @@ function ProfilePageInner() {
         </div>
       </div>
 
-      {/* Identity Verification Widget (Tenants only, when not yet verified) */}
-      {profile?.role === "TENANT" &&
-        (profile?.ninStatus === "PENDING" ||
-          profile?.ninStatus === "FAILED") && (
-          <div
-            className="card mb-6"
-            style={{
-              borderLeft: "4px solid var(--color-primary)",
-              background: "var(--bg-secondary)",
-            }}
-          >
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-2">
-                <Shield size={20} style={{ color: "var(--color-primary)" }} />
-                <h3 style={{ fontSize: "var(--text-lg)", margin: 0 }}>
-                  Identity Verification Required
-                </h3>
-              </div>
-              <p className="text-sm text-muted">
-                To build trust on Renta, please verify your identity. This is
-                required to access rental features.
-              </p>
-
-              {/* Option 1: Didit (Primary, recommended) */}
-              <DiditVerifyButton />
-
-              {/* Option 2: NIN (Fallback, collapsible) */}
-              <NinFallback
-                onSuccess={() => {
-                  setProfile((prev) => ({ ...prev, ninStatus: "VERIFIED" }));
-                  toast.success(
-                    "Identity Verified",
-                    "Identity successfully verified!",
-                  );
-                }}
-                onFail={() =>
-                  setProfile((prev) => ({ ...prev, ninStatus: "FAILED" }))
-                }
-              />
+      {/* Identity Verification Widget (all users, when not yet verified) */}
+      {(profile?.ninStatus === "PENDING" ||
+        profile?.ninStatus === "FAILED") && (
+        <div
+          className="card mb-6"
+          style={{
+            borderLeft: "4px solid var(--color-primary)",
+            background: "var(--bg-secondary)",
+          }}
+        >
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-2">
+              <Shield size={20} style={{ color: "var(--color-primary)" }} />
+              <h3 style={{ fontSize: "var(--text-lg)", margin: 0 }}>
+                Identity Verification Required
+              </h3>
             </div>
+            <p className="text-sm text-muted">
+              To build trust on Renta, please verify your identity. This is
+              required to access rental features.
+            </p>
+
+            {/* Option 1: Didit (Primary, recommended) */}
+            <DiditVerifyButton />
+
+            {/* Option 2: NIN (Fallback, collapsible) */}
+            <NinFallback
+              onSuccess={() => {
+                setProfile((prev) => ({ ...prev, ninStatus: "VERIFIED" }));
+                toast.success(
+                  "Identity Verified",
+                  "Identity successfully verified!",
+                );
+              }}
+              onFail={() =>
+                setProfile((prev) => ({ ...prev, ninStatus: "FAILED" }))
+              }
+            />
           </div>
-        )}
+        </div>
+      )}
 
       {/* Tenant Screening Widget */}
       {profile?.role === "TENANT" && (
@@ -913,7 +912,14 @@ function DiditVerifyButton() {
       const data = await res.json();
       if (!res.ok)
         throw new Error(data.error || "Failed to start verification");
-      window.location.href = data.verification_url;
+      const verificationUrl =
+        data.verification_url || data.verificationUrl || data.url;
+      if (!verificationUrl) {
+        throw new Error(
+          "Verification service did not return a verification URL",
+        );
+      }
+      window.location.href = verificationUrl;
     } catch (err) {
       const friendly = friendlyError(err);
       toast.error(friendly.title, friendly.message);
