@@ -188,16 +188,16 @@ export default function LandlordTenantsPage() {
                 <div
                   className="mt-4"
                   style={{
-                    display: 'grid',
-                    gap: 'var(--space-4)',
+                    display: "grid",
+                    gap: "var(--space-4)",
                   }}
                 >
                   <div
                     className="card"
                     style={{
-                      background: 'var(--bg-secondary)',
-                      border: '1px solid var(--border-color)',
-                      padding: 'var(--space-5)',
+                      background: "var(--bg-secondary)",
+                      border: "1px solid var(--border-color)",
+                      padding: "var(--space-5)",
                     }}
                   >
                     <div className="flex items-center gap-2 mb-4">
@@ -211,71 +211,72 @@ export default function LandlordTenantsPage() {
                     </div>
 
                     <div className="grid grid-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-muted text-xs uppercase tracking-wider mb-1">
-                        Full Name
-                      </p>
-                      <p className="font-medium">
-                        {rental.tenant?.firstName} {rental.tenant?.lastName}
-                      </p>
-                    </div>
-                    {rental.tenant?.phone && (
                       <div>
                         <p className="text-muted text-xs uppercase tracking-wider mb-1">
-                          Phone Number
+                          Full Name
                         </p>
-                        <p className="font-medium flex items-center gap-2">
-                          <Phone size={14} /> {rental.tenant.phone}
+                        <p className="font-medium">
+                          {rental.tenant?.firstName} {rental.tenant?.lastName}
                         </p>
                       </div>
-                    )}
-                    {rental.tenant?.email && (
+                      {rental.tenant?.phone && (
+                        <div>
+                          <p className="text-muted text-xs uppercase tracking-wider mb-1">
+                            Phone Number
+                          </p>
+                          <p className="font-medium flex items-center gap-2">
+                            <Phone size={14} /> {rental.tenant.phone}
+                          </p>
+                        </div>
+                      )}
+                      {rental.tenant?.email && (
+                        <div>
+                          <p className="text-muted text-xs uppercase tracking-wider mb-1">
+                            Email Address
+                          </p>
+                          <p className="font-medium flex items-center gap-2">
+                            <Mail size={14} /> {rental.tenant.email}
+                          </p>
+                        </div>
+                      )}
                       <div>
                         <p className="text-muted text-xs uppercase tracking-wider mb-1">
-                          Email Address
+                          Property
                         </p>
                         <p className="font-medium flex items-center gap-2">
-                          <Mail size={14} /> {rental.tenant.email}
+                          <Home size={14} /> {rental.property?.title}
                         </p>
                       </div>
-                    )}
-                    <div>
-                      <p className="text-muted text-xs uppercase tracking-wider mb-1">
-                        Property
-                      </p>
-                      <p className="font-medium flex items-center gap-2">
-                        <Home size={14} /> {rental.property?.title}
-                      </p>
-                    </div>
-                    {rental.property?.address && (
-                      <div style={{ gridColumn: "1 / -1" }}>
+                      {rental.property?.address && (
+                        <div style={{ gridColumn: "1 / -1" }}>
+                          <p className="text-muted text-xs uppercase tracking-wider mb-1">
+                            Property Address
+                          </p>
+                          <p className="font-medium flex items-center gap-2">
+                            <MapPin size={14} /> {rental.property.address}
+                          </p>
+                        </div>
+                      )}
+                      <div>
                         <p className="text-muted text-xs uppercase tracking-wider mb-1">
-                          Property Address
+                          Rental Start Date
                         </p>
                         <p className="font-medium flex items-center gap-2">
-                          <MapPin size={14} /> {rental.property.address}
+                          <Calendar size={14} />{" "}
+                          {new Date(rental.startDate).toLocaleDateString(
+                            "en-GB",
+                            { dateStyle: "medium" },
+                          )}
                         </p>
                       </div>
-                    )}
-                    <div>
-                      <p className="text-muted text-xs uppercase tracking-wider mb-1">
-                        Rental Start Date
-                      </p>
-                      <p className="font-medium flex items-center gap-2">
-                        <Calendar size={14} />{" "}
-                        {new Date(rental.startDate).toLocaleDateString(
-                          "en-GB",
-                          { dateStyle: "medium" },
-                        )}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-muted text-xs uppercase tracking-wider mb-1">
-                        Rental Status
-                      </p>
-                      <p className="font-medium flex items-center gap-2">
-                        <ShieldCheck size={14} /> {rental.status}
-                      </p>
+                      <div>
+                        <p className="text-muted text-xs uppercase tracking-wider mb-1">
+                          Rental Status
+                        </p>
+                        <p className="font-medium flex items-center gap-2">
+                          <ShieldCheck size={14} /> {rental.status}
+                        </p>
+                      </div>
                     </div>
                   </div>
 
@@ -283,9 +284,9 @@ export default function LandlordTenantsPage() {
                     <div
                       className="card"
                       style={{
-                        background: 'var(--bg-secondary)',
-                        border: '1px solid var(--border-color)',
-                        padding: 'var(--space-5)',
+                        background: "var(--bg-secondary)",
+                        border: "1px solid var(--border-color)",
+                        padding: "var(--space-5)",
                       }}
                     >
                       <div className="flex items-center gap-2 mb-4">
