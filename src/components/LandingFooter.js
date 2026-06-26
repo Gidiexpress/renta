@@ -1,38 +1,51 @@
-import Link from 'next/link';
-import styles from '@/app/page.module.css';
+import Link from "next/link";
+import styles from "@/app/page.module.css";
 
 export default function LandingFooter() {
-    return (
-        <footer className={styles.footer}>
-            <div className={`container ${styles.footerInner}`}>
-                <div className={styles.footerBrand}>
-                    <span className={styles.footerLogo}>Renta</span>
-                    <p>Verified apartment rentals in Ilorin, Nigeria.</p>
-                </div>
-                <div className={styles.footerLinks}>
-                    <div>
-                        <h6>Platform</h6>
-                        <Link href="/register">Browse Listings</Link>
-                        <Link href="/register?role=LANDLORD">List Property</Link>
-                    </div>
-                    <div>
-                        <h6>Earn with Renta</h6>
-                        <Link href="/scout-program">Become a Scout</Link>
-                        <Link href="/affiliate-program">Affiliate Program</Link>
-                    </div>
-                    <div>
-                        <h6>Company</h6>
-                        <Link href="/about">About Renta</Link>
-                        <Link href="/contact">Contact</Link>
-                        <Link href="/terms">Terms of Service</Link>
-                        <Link href="/privacy">Privacy Policy</Link>
-                    </div>
-                </div>
-                <div className={styles.footerBottom}>
-                    <p>© {new Date().getFullYear()} Renta. All rights reserved.</p>
-                </div>
-            </div>
-        </footer>
-    );
+  return (
+    <footer className={styles.footer}>
+      <div className={`container ${styles.footerInner}`}>
+        <div className={styles.footerBrand}>
+          <span className={styles.footerLogo}>Renta</span>
+          <p>Verified apartment rentals in Ilorin, Nigeria.</p>
+        </div>
+        <div className={styles.footerLinks}>
+          <div>
+            <h6>Platform</h6>
+            <Link href="/register">Browse Listings</Link>
+            <Link href="/register?role=LANDLORD">List Property</Link>
+          </div>
+          <div>
+            <h6>Earn with Renta</h6>
+            <Link href="/scout-program">Become a Scout</Link>
+            <Link href="/affiliate-program">Affiliate Program</Link>
+          </div>
+          <div>
+            <h6>Company</h6>
+            <Link href="/about">About Renta</Link>
+            <Link href="/contact">Contact</Link>
+            <Link href="/terms">Terms of Service</Link>
+            <Link href="/privacy">Privacy Policy</Link>
+          </div>
+        </div>
+        <div className={styles.footerBottom}>
+          <p>© {new Date().getFullYear()} Renta. All rights reserved.</p>
+          <p>
+            Renta is a product of Landmark Property Oasis Ltd, a duly registered
+            company with the Federal Government of Nigeria.
+          </p>
+          <p>
+            Made with ❤️ by{" "}
+            <a
+              href="https://eooglobal.com.ng"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              EOO Global Systems
+            </a>
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
 }
-
