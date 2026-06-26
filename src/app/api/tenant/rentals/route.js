@@ -1,42 +1,61 @@
-import { prisma } from '@/lib/db';
-import { auth } from '@/lib/auth';
-import { NextResponse } from 'next/server';
+import { prisma } from "@/lib/db";
+import { auth } from "@/lib/auth";
+import { NextResponse } from "next/server";
+import { normalizePropertyImages } from "@/lib/images/normalize";
 
 // GET: Fetch current user's rentals
 export async function GET() {
-    try {
-        const session = await auth();
-        if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  try {
+    const session = await auth();
+    if (!session)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-        const rentals = await prisma.rental.findMany({
-            where: { tenantId: parseInt(session.user.id) },
-            include: {
-                property: {
-                    select: {
-                        title: true,
-                        address: true,
-                        landlordId: true,
-                        landlord: {
-                            select: { firstName: true, lastName: true }
-                        },
-                        area: { select: { name: true } },
-                        city: { select: { name: true } },
-                        type: true,
-                        images: { take: 1, where: { isPrimary: true } }
-                    }
-                },
-                tenant: {
-                    select: { firstName: true, lastName: true }
-                },
-                escrow: { select: { id: true, status: true } },
-                agreement: { select: { tenantSigned: true, landlordSigned: true, tenantSignature: true, tenantSignedAt: true } }
+    const rentals = await prisma.rental.findMany({
+      where: { tenantId: parseInt(session.user.id) },
+      include: {
+        property: {
+          select: {
+            title: true,
+            address: true,
+            landlordId: true,
+            landlord: {
+              select: { firstName: true, lastName: true },
             },
-            orderBy: { createdAt: 'desc' }
-        });
+            area: { select: { name: true } },
+            city: { select: { name: true } },
+            type: true,
+            images: { take: 1, where: { isPrimary: true } },
+          },
+        },
+        tenant: {
+          select: { firstName: true, lastName: true },
+        },
+        escrow: { select: { id: true, status: true } },
+        agreement: {
+          select: {
+            tenantSigned: true,
+            landlordSigned: true,
+            tenantSignature: true,
+            tenantSignedAt: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
 
-        return NextResponse.json(rentals);
-    } catch (error) {
-        console.error('Error fetching rentals:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-    }
+    return NextResponse.json(
+      rentals.map((rental) => ({
+        ...rental,
+        property: rental.property
+          ? normalizePropertyImages(rental.property)
+          : rental.property,
+      })),
+    );
+  } catch (error) {
+    console.error("Error fetching rentals:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
+  }
 }
