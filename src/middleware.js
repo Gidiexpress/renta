@@ -38,6 +38,9 @@ export default NextAuth(authConfig).auth((req) => {
     "/contact",
     "/terms",
     "/privacy",
+    "/acceptable-use",
+    "/refund-policy",
+    "/dispute-resolution",
     "/scout-program",
     "/affiliate-program",
   ];
