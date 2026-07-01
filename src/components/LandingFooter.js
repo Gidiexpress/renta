@@ -26,6 +26,9 @@ export default function LandingFooter() {
             <Link href="/contact">Contact</Link>
             <Link href="/terms">Terms of Service</Link>
             <Link href="/privacy">Privacy Policy</Link>
+            <Link href="/acceptable-use">Acceptable Use Policy</Link>
+            <Link href="/refund-policy">Refund Policy</Link>
+            <Link href="/dispute-resolution">Dispute Resolution Policy</Link>
           </div>
         </div>
         <div className={styles.footerBottom}>
